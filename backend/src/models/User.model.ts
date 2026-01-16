@@ -44,6 +44,8 @@ export interface IUser extends Document {
 
     createdAt: Date;
     updatedAt: Date;
+
+    isUserLoggedIn: Boolean;
 }
 
 /* =======================
@@ -159,6 +161,11 @@ const UserSchema = new Schema<IUser>(
             type: String,
             default: "",
         },
+
+        isUserLoggedIn: {
+            type: Boolean,
+            default: false
+        }
     },
     {
         timestamps: true,

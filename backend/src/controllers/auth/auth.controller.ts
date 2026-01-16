@@ -35,14 +35,18 @@ const signup = async (req: any, res: any) => {
       password: hashedPassword,
       otp,
       verified: false,
-      refreshToken: "",
+      refreshToken: ""
     });
 
-    //await sendOtpEmail(email, otp);
+    await sendOtpEmail(email, otp);
+
+    const userObj = user.toObject();
+    delete userObj.password;
+    delete userObj.otp;
 
     res.status(201).json({
       message: "Signup successful. OTP sent to email.",
-      user
+      user : userObj
     });
   } catch (err: any) {
     res.status(500).json({ message: "Signup failed", err: err.message });
@@ -72,6 +76,7 @@ const verifyOtp = async (req: any, res: any) => {
     const refreshToken = generateRefreshToken(user._id);
 
     user.refreshToken = refreshToken;
+    user.isUserLoggedIn = true;
     await user.save();
 
     res.json({
@@ -79,8 +84,8 @@ const verifyOtp = async (req: any, res: any) => {
       accessToken,
       refreshToken,
     });
-  } catch (err) {
-    res.status(500).json({ message: "OTP verification failed" });
+  } catch (err: any) {
+    res.status(500).json({ message: "OTP verification failed", err: err.message });
   }
 };
 
@@ -109,6 +114,7 @@ const login = async (req: any, res: any) => {
     const refreshToken = generateRefreshToken(user._id);
 
     user.refreshToken = refreshToken;
+    user.isUserLoggedIn = true;
     await user.save();
 
     res.json({
@@ -166,8 +172,8 @@ const logout = async (req: any, res: any) => {
     }
 
     user.refreshToken = "";
+    user.isUserLoggedIn = false;
     await user.save();
-
     res.json({ message: "Logged out successfully" });
   } catch (err: any) {
     res.status(500).json({ message: "Logout failed" , err: err.message });

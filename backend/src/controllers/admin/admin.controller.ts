@@ -1,7 +1,7 @@
 const User = require("../../models/User.model");
 const Product = require("../../models/Product.model");
 const Order = require("../../models/Order.model");
-const ServiceProviderApplication = require("../../models/ServiceProviderApplication.model");
+const ServiceProviderApplication = require("../../models/ServiceProviderApplication.model").default;
 
 /* ===============================
    GET ALL PROVIDER ACTIVITIES
@@ -86,56 +86,110 @@ const reviewProviderApplication = async (req: any, res: any) => {
 /* ===============================
    ADD SERVICE PROVIDER (ADMIN)
 =============================== */
+
 const addServiceProvider = async (req: any, res: any) => {
   try {
-    const { name, email, phone, password } = req.body;
+    const { userId } = req.body;
 
-    const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(400).json({ message: "User already exists" });
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
     }
 
-    const bcrypt = require("bcryptjs");
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // 1️⃣ User check
+    const user = await User.findById(userId);
 
-    const provider = await User.create({
-      name,
-      email,
-      phone,
-      password: hashedPassword,
-      role: "provider",
-      verified: true,
-      isActive: true,
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // 2️⃣ Role check
+    if (user.role === "provider" || user.role === "admin") {
+      return res.status(400).json({
+        message: "User is already a provider or admin",
+      });
+    }
+
+    // 3️⃣ User must be verified
+    if (!user.verified) {
+      return res.status(400).json({
+        message: "User should be verified first",
+      });
+    }
+
+    // ✅ 4️⃣ MAIN CHECK (Service Provider Application)
+    const application = await ServiceProviderApplication.findOne({
+      user: userId,
+      status: "Pending",
     });
 
-    res.status(201).json({
-      message: "Service provider added",
-      provider,
+    if (!application) {
+      return res.status(400).json({
+        message:
+          "User has not applied for service provider or application is not pending",
+      });
+    }
+
+    // 5️⃣ Promote user
+    user.role = "provider";
+    user.isActive = true;
+    user.verified = true;
+    await user.save();
+
+    // 6️⃣ Update application status
+    application.status = "Approved";
+    application.reviewedAt = new Date();
+    await application.save();
+
+    res.status(200).json({
+      message: "User successfully promoted to service provider",
+      user,
     });
   } catch (err: any) {
     res.status(500).json({
-      message: "Failed to add provider",
+      message: "Failed to add service provider",
       err: err.message,
     });
   }
 };
+
 
 /* ===============================
    REMOVE SERVICE PROVIDER
 =============================== */
 const removeServiceProvider = async (req: any, res: any) => {
   try {
-    const provider = await User.findById(req.params.id);
+    const providerId = req.params.id;
+
+    // 1️⃣ Find provider
+    const provider = await User.findById(providerId);
 
     if (!provider || provider.role !== "provider") {
-      return res.status(404).json({ message: "Provider not found" });
+      return res.status(404).json({
+        message: "Provider not found",
+      });
     }
 
+    // 2️⃣ Deactivate provider
     provider.isActive = false;
+    provider.role = "user"; // 🔁 optional but RECOMMENDED
     await provider.save();
 
+    // 3️⃣ Update ServiceProviderApplication
+    await ServiceProviderApplication.findOneAndUpdate(
+      { user: providerId },
+      {
+        status: "Rejected", // or "Removed" if you add new enum
+        adminRemark: "Removed by admin",
+        reviewedAt: new Date(),
+      }
+    );
+
     res.json({
-      message: "Service provider removed",
+      message: "Service provider removed successfully",
     });
   } catch (err: any) {
     res.status(500).json({

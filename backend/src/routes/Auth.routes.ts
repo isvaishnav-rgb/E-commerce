@@ -18,7 +18,6 @@ router.post("/login", login);
 router.post("/refresh", refreshToken);
 router.post("/logout", logout);
 
-
 router.get("/me", authJWT, (req: any, res: any) => {
   res.json(req.user);
 });

@@ -6,15 +6,15 @@ const {
   reviewProviderApplication,
   addServiceProvider,
   removeServiceProvider,
-} = require("../../controllers/admin/provider.admin.controller");
+} = require("../controllers/admin/admin.controller");
 
 const {
   updateOrderStatus,
   updatePaymentStatus,
-} = require("../../controllers/admin/order.admin.controller");
+} = require("../controllers/admin/AdminManage.controller");
 
-const protect = require("../../middlewares/auth/AuthJWT");
-const { allowRoles } = require("../../middlewares/auth/role.middleware");
+const protect = require("../middlewares/auth/AuthJWT");
+const { allowRoles } = require("../middlewares/auth/RoleAuth");
 
 /* ===============================
    PROVIDER ACTIVITIES

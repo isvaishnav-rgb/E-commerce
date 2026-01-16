@@ -6,6 +6,7 @@ const authRoutes = require("../src/routes/Auth.routes")
 const productRoutes = require("../src/routes/Product.routes")
 const providerRoutes = require("../src/routes/ServiceProvider.routes")
 const orderRoutes = require("../src/routes/Order.routes")
+const adminRoutes = require("../src/routes/Admin.routes")
 
 dotenv.config()
 DBConnnect();
@@ -19,6 +20,7 @@ app.use("/auth", authRoutes)
 app.use("/product", productRoutes)
 app.use("/provider",  providerRoutes)
 app.use("/order", orderRoutes)
+app.use("/admin", adminRoutes)
 
 app.get("/", (req: any, res: any)=>{
     res.json("Hello")
