@@ -6,7 +6,9 @@ const {
   login,
   verifyOtp,
   refreshToken,
-  logout
+  logout,
+  updateProfile,
+  changePassword
 } = require("../controllers/auth/auth.controller");
 
 const authJWT = require("../middlewares/auth/AuthJWT");
@@ -21,5 +23,17 @@ router.post("/logout", logout);
 router.get("/me", authJWT, (req: any, res: any) => {
   res.json(req.user);
 });
+
+router.put(
+  "/profile",
+  authJWT,
+  updateProfile
+);
+
+router.put(
+  "/change-password",
+  authJWT,
+  changePassword
+);
 
 module.exports = router;

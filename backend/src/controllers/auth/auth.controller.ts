@@ -180,10 +180,145 @@ const logout = async (req: any, res: any) => {
   }
 };
 
+<<<<<<< HEAD
+=======
+//update Password
+
+const changePassword = async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Current password and new password are required",
+      });
+    }
+
+    if (currentPassword === newPassword) {
+      return res.status(400).json({
+        message: "New password must be different from current password",
+      });
+    }
+
+    // 1️⃣ Get user with password
+    const user = await User.findById(userId).select("+password");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // 2️⃣ Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Current password is incorrect",
+      });
+    }
+
+    // 3️⃣ Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // 4️⃣ Update password & invalidate sessions
+    user.password = hashedPassword;
+    user.refreshToken = ""; // 🔥 logout from all devices
+    user.isUserLoggedIn = false;
+
+    await user.save();
+
+    res.json({
+      message: "Password changed successfully. Please login again.",
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to change password",
+      err: err.message,
+    });
+  }
+};
+
+/* =====================
+   UPDATE USER PROFILE
+===================== */
+const updateProfile = async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+
+    const allowedUpdates = [
+      "name",
+      "phone",
+      "address",
+      "city",
+      "state",
+      "pincode",
+      "avatar",
+    ];
+
+    const updates: any = {};
+
+    allowedUpdates.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    });
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        message: "No valid fields provided to update",
+      });
+    }
+
+    // Optional: phone uniqueness check
+    if (updates.phone) {
+      const exists = await User.findOne({
+        phone: updates.phone,
+        _id: { $ne: userId },
+      });
+
+      if (exists) {
+        return res.status(400).json({
+          message: "Phone number already in use",
+        });
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true }
+    ).select("-password -refreshToken -otp");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      message: "Profile updated successfully",
+      user,
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to update profile",
+      err: err.message,
+    });
+  }
+};
+
+>>>>>>> 2184f3f (Add some save changes)
 module.exports = {
   signup,
   login,
   verifyOtp,
   refreshToken,
+<<<<<<< HEAD
   logout
+=======
+  logout,
+  changePassword,
+  updateProfile 
+>>>>>>> 2184f3f (Add some save changes)
 };
