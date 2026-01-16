@@ -180,8 +180,6 @@ const logout = async (req: any, res: any) => {
   }
 };
 
-<<<<<<< HEAD
-=======
 //update Password
 
 const changePassword = async (req: any, res: any) => {
@@ -308,17 +306,12 @@ const updateProfile = async (req: any, res: any) => {
   }
 };
 
->>>>>>> 2184f3f (Add some save changes)
 module.exports = {
   signup,
   login,
   verifyOtp,
   refreshToken,
-<<<<<<< HEAD
-  logout
-=======
   logout,
   changePassword,
   updateProfile 
->>>>>>> 2184f3f (Add some save changes)
 };
