@@ -1,30 +1,27 @@
 const Order = require("../../models/Order.model");
 
 /* ===============================
-   UPDATE ORDER STATUS (ADMIN)
+   UPDATE ORDER STATUS
 =============================== */
 const updateOrderStatus = async (req: any, res: any) => {
   try {
-    const orderId = req.params.id;
-    const { status } = req.body;
+    const { orderStatus } = req.body;
 
     const allowedStatuses = [
       "Pending",
-      "Created",
       "Paid",
-      "Cancelled",
       "Shipped",
       "Delivered",
-      "Returned",
+      "Cancelled",
     ];
 
-    if (!allowedStatuses.includes(status)) {
+    if (!allowedStatuses.includes(orderStatus)) {
       return res.status(400).json({
         message: "Invalid order status",
       });
     }
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(req.params.id);
 
     if (!order) {
       return res.status(404).json({
@@ -32,10 +29,27 @@ const updateOrderStatus = async (req: any, res: any) => {
       });
     }
 
-    order.status = status;
+    // Prevent updates after cancellation
+    if (order.orderStatus === "Cancelled") {
+      return res.status(400).json({
+        message: "Cancelled order cannot be updated",
+      });
+    }
+
+    order.orderStatus = orderStatus;
+
+    // Auto-sync payment status
+    if (orderStatus === "Paid") {
+      order.paymentStatus = "Success";
+    }
+
+    if (orderStatus === "Cancelled") {
+      order.paymentStatus = "Failed";
+    }
+
     await order.save();
 
-    res.status(200).json({
+    res.json({
       message: "Order status updated successfully",
       order,
     });
@@ -48,22 +62,21 @@ const updateOrderStatus = async (req: any, res: any) => {
 };
 
 /* ===============================
-   UPDATE PAYMENT STATUS (ADMIN)
+   UPDATE PAYMENT STATUS
 =============================== */
 const updatePaymentStatus = async (req: any, res: any) => {
   try {
-    const orderId = req.params.id;
     const { paymentStatus } = req.body;
 
-    const allowedPaymentStatuses = ["Pending", "Paid", "Failed"];
+    const allowedPayments = ["Pending", "Success", "Failed"];
 
-    if (!allowedPaymentStatuses.includes(paymentStatus)) {
+    if (!allowedPayments.includes(paymentStatus)) {
       return res.status(400).json({
         message: "Invalid payment status",
       });
     }
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(req.params.id);
 
     if (!order) {
       return res.status(404).json({
@@ -73,14 +86,18 @@ const updatePaymentStatus = async (req: any, res: any) => {
 
     order.paymentStatus = paymentStatus;
 
-    // Auto-sync order status if payment is paid
-    if (paymentStatus === "Paid" && order.status === "Pending") {
-      order.status = "Paid";
+    // Auto update order status
+    if (paymentStatus === "Success") {
+      order.orderStatus = "Paid";
+    }
+
+    if (paymentStatus === "Failed") {
+      order.orderStatus = "Pending";
     }
 
     await order.save();
 
-    res.status(200).json({
+    res.json({
       message: "Payment status updated successfully",
       order,
     });
