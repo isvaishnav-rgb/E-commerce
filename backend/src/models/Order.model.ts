@@ -1,0 +1,102 @@
+import mongoose, { Schema, Document } from "mongoose";
+
+export type OrderStatus =
+  | "Pending"
+  | "Paid"
+  | "Cancelled"
+  | "Shipped"
+  | "Delivered"
+  | "Returned";
+
+export interface IOrderItem {
+  product: mongoose.Types.ObjectId;
+  quantity: number;
+  price: number;
+}
+
+export interface IOrder extends Document {
+  user: mongoose.Types.ObjectId;
+
+  items: IOrderItem[];
+
+  totalAmount: number;
+
+  address: string;
+  phone: string;
+
+  status: OrderStatus;
+
+  checkoutSessionId?: string;
+  paymentStatus: "Pending" | "Paid" | "Failed";
+
+  createdAt: Date;
+}
+
+const OrderSchema = new Schema<IOrder>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    items: [
+      {
+        product: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+
+    address: {
+      type: String,
+      required: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+    },
+
+    status: {
+      type: String,
+      enum: [
+        "Pending",
+        "Created",
+        "Paid",
+        "Cancelled",
+        "Shipped",
+        "Delivered",
+        "Returned",
+      ],
+      default: "Pending",
+    },
+
+    checkoutSessionId: String,
+
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Paid", "Failed"],
+      default: "Pending",
+    },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model<IOrder>("Order", OrderSchema);
