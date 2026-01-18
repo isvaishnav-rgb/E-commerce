@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import Product from "../../models/Product.model";
 const uploadBufferToCloudinary = require("../../utils/uploadToCloudinary")
+const User = require("../../models/User.model")
+const mongoose = require("mongoose")
 
 /* =====================
    CREATE PRODUCT
@@ -131,6 +133,115 @@ export const getActiveProducts = async (req: Request, res: Response) => {
   } catch (err: any) {
     res.status(500).json({
       message: "Failed to fetch active products",
+      error: err.message,
+    });
+  }
+};
+
+export const toggleWishlist = async (req: any, res: Response) => {
+  try {
+    const userId = req.user.id;
+    const { productId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: "Invalid product id" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isProductInWishlist = user.wishlist.some(
+      (id: any) => id.toString() === productId
+    );
+
+    if (isProductInWishlist) {
+      // REMOVE
+      user.wishlist = user.wishlist.filter(
+        (id: any) => id.toString() !== productId
+      );
+    } else {
+      // ADD
+      user.wishlist.push(productId);
+    }
+
+    await user.save();
+
+    res.json({
+      message: isProductInWishlist
+        ? "Product removed from wishlist"
+        : "Product added to wishlist",
+      wishlist: user.wishlist,
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Wishlist toggle failed",
+      error: err.message,
+    });
+  }
+};
+
+export const toggleCart = async (req: any, res: Response) => {
+  try {
+    const userId = req.user.id;
+    const { productId, quantity = 1 } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: "Invalid product id" });
+    }
+
+    if (quantity < 0) {
+      return res.status(400).json({ message: "Quantity cannot be negative" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const cartIndex = user.cart.findIndex(
+      (item: any) => item.product.toString() === productId
+    );
+
+    /* =====================
+       CART LOGIC
+    ===================== */
+
+    // REMOVE if quantity = 0
+    if (cartIndex > -1 && quantity === 0) {
+      user.cart.splice(cartIndex, 1);
+    }
+
+    // UPDATE quantity if product exists
+    else if (cartIndex > -1 && quantity > 0) {
+      user.cart[cartIndex].quantity = quantity;
+    }
+
+    // ADD new product
+    else if (cartIndex === -1 && quantity > 0) {
+      user.cart.push({
+        product: productId,
+        quantity,
+      });
+    }
+
+    await user.save();
+
+    res.json({
+      message:
+        quantity === 0
+          ? "Product removed from cart"
+          : cartIndex > -1
+          ? "Cart quantity updated"
+          : "Product added to cart",
+      cart: user.cart,
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Cart update failed",
       error: err.message,
     });
   }

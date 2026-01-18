@@ -199,9 +199,29 @@ const removeServiceProvider = async (req: any, res: any) => {
   }
 };
 
+/* ===============================
+   GET ALL USERS (ADMIN)
+=============================== */
+const getAllUsers = async (req: any, res: any) => {
+  try {
+    const users = await User.find()
+      .select("name email phone role verified isActive createdAt")
+      .sort({ createdAt: -1 });
+
+    res.json(users);
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to fetch users",
+      error: err.message,
+    });
+  }
+};
+
+
 module.exports = {
   getProviderActivities,
   reviewProviderApplication,
   addServiceProvider,
   removeServiceProvider,
+  getAllUsers
 };

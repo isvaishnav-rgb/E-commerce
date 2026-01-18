@@ -1,37 +1,23 @@
-import {
-  recommendedProducts,
-  favouriteProducts,
-  popularProducts,
-  mostPurchasedProducts,
-} from "../../dummyData/productsData";
+import { useAppSelector } from "../../app/hooks";
 import ProductSection from "../../modules/ProductSection";
 
 const LandingPage = () => {
+  const { products, loading } = useAppSelector(
+    (state) => state.products
+  );
+
+  if (loading) {
+    return <div className="text-center py-20">Loading...</div>;
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      
-      <ProductSection 
+      <ProductSection
         title="Recommended Products"
-        products={recommendedProducts}
+        products={products}
       />
-
-      <ProductSection 
-        title="Favourite Products"
-        products={favouriteProducts}
-      />
-
-      <ProductSection 
-        title="Popular Products"
-        products={popularProducts}
-      />
-
-      <ProductSection 
-        title="Most Purchased Products"
-        products={mostPurchasedProducts}
-      />
-
     </div>
   );
 };
 
-export default LandingPage ;
+export default LandingPage;

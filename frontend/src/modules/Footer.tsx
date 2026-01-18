@@ -83,18 +83,18 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold mb-4">Follow Us</h3>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-white">
+              <Link to="#" className="hover:text-white">
                 <Facebook size={20} />
-              </a>
-              <a href="#" className="hover:text-white">
+              </Link>
+              <Link to="#" className="hover:text-white">
                 <Instagram size={20} />
-              </a>
-              <a href="#" className="hover:text-white">
+              </Link>
+              <Link to="#" className="hover:text-white">
                 <Twitter size={20} />
-              </a>
-              <a href="#" className="hover:text-white">
+              </Link>
+              <Link to="#" className="hover:text-white">
                 <Linkedin size={20} />
-              </a>
+              </Link>
             </div>
           </div>
 

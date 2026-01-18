@@ -1,10 +1,14 @@
 export interface Product {
-  id: number;
+  _id: string;
   name: string;
   description: string;
   price: number;
+  discount: number;
+  finalPrice: number;
+  images: string[];
   category: string;
+  tags: string[];
   stock: number;
-  image: string;
-  status: "Active" | "Inactive";
+  status: "Active" | "Inactive" | "OutOfStock";
+  isFeatured: boolean;
 }

@@ -7,12 +7,19 @@ const productRoutes = require("../src/routes/Product.routes")
 const providerRoutes = require("../src/routes/ServiceProvider.routes")
 const orderRoutes = require("../src/routes/Order.routes")
 const adminRoutes = require("../src/routes/Admin.routes")
+const paymentRoute = require("../src/routes/payment.routes")
 
 dotenv.config()
 DBConnnect();
 
 const app = express();
-app.use(cors())
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 //routes
@@ -21,6 +28,7 @@ app.use("/product", productRoutes)
 app.use("/provider",  providerRoutes)
 app.use("/order", orderRoutes)
 app.use("/admin", adminRoutes)
+app.use("/payment", paymentRoute)
 
 app.get("/", (req: any, res: any)=>{
     res.json("Hello")

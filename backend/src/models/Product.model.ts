@@ -146,6 +146,15 @@ const ProductSchema = new Schema<IProduct>(
    Middleware
 ===================== */
 
+ProductSchema.pre("save", function () {
+  const product = this as IProduct;
+
+  product.finalPrice =
+    product.price - (product.price * product.discount) / 100;
+
+});
+
+
 // Auto calculate final price
 ProductSchema.pre("findOneAndUpdate", async function () {
   const update = this.getUpdate() as any;

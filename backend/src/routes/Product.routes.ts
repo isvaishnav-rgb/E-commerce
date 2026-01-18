@@ -9,7 +9,9 @@ const {
   updateProduct,
   deleteProduct,
   getMyProducts,
-  getActiveProducts
+  getActiveProducts,
+  toggleCart,
+  toggleWishlist
 } = require("../controllers/product/product.conroller");
 
 /* =====================
@@ -24,7 +26,7 @@ const {
 /* =====================
    CREATE PRODUCT
 ===================== */
-const upload = require("../middlewares/upload/KycUpload");
+const upload = require("../middlewares/upload/Upload");
 
 router.post(
   "/create",
@@ -45,7 +47,6 @@ router.put(
   upload.array("images", 5),
   updateProduct
 );
-
 
 /* =====================
    DELETE PRODUCT
@@ -69,5 +70,10 @@ router.get(
    PUBLIC PRODUCTS
 ===================== */
 router.get("/", getActiveProducts);
+
+router.post("/cart/toggle", authJWT, toggleCart);
+
+// Wishlist
+router.post("/wishlist/toggle", authJWT, toggleWishlist);
 
 module.exports = router;

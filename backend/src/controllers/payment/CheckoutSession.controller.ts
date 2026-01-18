@@ -1,27 +1,42 @@
-const Order = require("../../models/Order.model");
-const Product = require("../../models/Product.model");
+const Order = require("../../models/Order.model").default;
+const Payment = require("../../models/payment.model").default;
 const stripe = require("../../config/stripe");
 
 const createCheckoutSession = async (req: any, res: any) => {
   try {
     const userId = req.user.id;
-    const orderId = req.params.orderId;
+    const { orderId } = req.params;
 
+    /* =====================
+       FIND ORDER
+    ===================== */
     const order = await Order.findOne({
       _id: orderId,
       user: userId,
     }).populate("items.product");
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
     }
 
-    if (order.paymentStatus === "PAID") {
+    /* =====================
+       CHECK EXISTING PAYMENT
+    ===================== */
+    let payment = await Payment.findOne({ order: order._id });
+
+    if (payment && payment.status === "Paid") {
       return res.status(400).json({
+        success: false,
         message: "Order already paid",
       });
     }
 
+    /* =====================
+       STRIPE LINE ITEMS
+    ===================== */
     const lineItems = order.items.map((item: any) => ({
       price_data: {
         currency: "inr",
@@ -34,10 +49,12 @@ const createCheckoutSession = async (req: any, res: any) => {
       quantity: item.quantity,
     }));
 
+    /* =====================
+       CREATE STRIPE SESSION
+    ===================== */
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
-
       line_items: lineItems,
 
       success_url: `${process.env.FRONTEND_URL}/payment-success?orderId=${order._id}`,
@@ -49,16 +66,35 @@ const createCheckoutSession = async (req: any, res: any) => {
       },
     });
 
-    order.checkoutSessionId = session.id;
-    await order.save();
+    /* =====================
+       CREATE / UPDATE PAYMENT
+    ===================== */
+    if (!payment) {
+      payment = await Payment.create({
+        user: userId,
+        order: order._id,
+        amount: order.totalAmount,
+        method: "Stripe",
+        status: "Pending",
+        checkoutSessionId: session.id,
+      });
+
+      order.payment = payment._id;
+      await order.save();
+    } else {
+      payment.checkoutSessionId = session.id;
+      await payment.save();
+    }
 
     res.status(200).json({
+      success: true,
       checkoutUrl: session.url,
     });
   } catch (err: any) {
     res.status(500).json({
+      success: false,
       message: "Checkout session creation failed",
-      err: err.message,
+      error: err.message,
     });
   }
 };

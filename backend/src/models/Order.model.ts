@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export type OrderStatus =
   | "Pending"
-  | "Paid"
+  | "Confirmed"
   | "Cancelled"
   | "Shipped"
   | "Delivered"
@@ -16,20 +16,14 @@ export interface IOrderItem {
 
 export interface IOrder extends Document {
   user: mongoose.Types.ObjectId;
-
   items: IOrderItem[];
-
   totalAmount: number;
-
   address: string;
   phone: string;
-
   status: OrderStatus;
-
-  checkoutSessionId?: string;
-  paymentStatus: "Pending" | "Paid" | "Failed";
-
+  payment?: mongoose.Types.ObjectId;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const OrderSchema = new Schema<IOrder>(
@@ -78,8 +72,7 @@ const OrderSchema = new Schema<IOrder>(
       type: String,
       enum: [
         "Pending",
-        "Created",
-        "Paid",
+        "Confirmed",
         "Cancelled",
         "Shipped",
         "Delivered",
@@ -88,15 +81,12 @@ const OrderSchema = new Schema<IOrder>(
       default: "Pending",
     },
 
-    checkoutSessionId: String,
-
-    paymentStatus: {
-      type: String,
-      enum: ["Pending", "Paid", "Failed"],
-      default: "Pending",
+    payment: {
+      type: Schema.Types.ObjectId,
+      ref: "Payment",
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model<IOrder>("Order", OrderSchema);
+export default mongoose.model<IOrder>("Order", OrderSchema);

@@ -306,6 +306,14 @@ const updateProfile = async (req: any, res: any) => {
   }
 };
 
+const me = async (req: any, res: any) => {
+  const user = await User.findById(req.user.id)
+    .select("-password -refreshToken -otp");
+
+  res.json(user);
+};
+
+
 module.exports = {
   signup,
   login,
@@ -313,5 +321,6 @@ module.exports = {
   refreshToken,
   logout,
   changePassword,
-  updateProfile 
+  updateProfile,
+  me 
 };

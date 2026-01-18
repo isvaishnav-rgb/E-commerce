@@ -96,6 +96,34 @@ const applyOrUpdateApplication = async (req: any, res: any) => {
   }
 };
 
+const getMyServiceProviderApplication = async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+
+    const application = await ServiceProviderApplication
+      .findOne({ user: userId })
+      .populate("user", "name email phone role");
+
+    if (!application) {
+      return res.status(200).json({
+        message: "No service provider application found",
+        application: null,
+      });
+    }
+
+    res.status(200).json({
+      message: "Service provider application fetched",
+      application,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      message: "Failed to fetch application",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   applyOrUpdateApplication,
+  getMyServiceProviderApplication,
 };

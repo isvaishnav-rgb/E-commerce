@@ -1,25 +1,41 @@
 const express = require("express");
+const {
+  placeOrder,
+} = require("../controllers/order/PlaceOrder.controller");
+const {
+  getMyOrders,
+} = require("../controllers/order/GetMyOrders");
+const {
+  getOrderById,
+} = require("../controllers/order/GetOrderById");
+const {
+  cancelOrder,
+} = require("../controllers/order/CancelOrder.controller");
+const {
+  returnOrder,
+} = require("../controllers/order/ReturnOrder.controller");
+
+const AuthJwt = require("../middlewares/auth/AuthJWT");
+
 const router = express.Router();
 
-const AuthJWT = require("../middlewares/auth/AuthJWT");
+/* =========================
+   ORDER ROUTES
+========================= */
 
-const { placeOrder } = require("../controllers/order/PlaceOrder.controller");
-const {
-  confirmPayment,
-} = require("../controllers/order/ConfirmOrderPayment.controller");
-const { cancelOrder } = require("../controllers/order/CancelOrder.controller");
-const { returnOrder } = require("../controllers/order/ReturnOrder.controller");
-const {
-  getOrderStatus,
-} = require("../controllers/order/OrderStatus.controller");
+// Place order
+router.post("/", AuthJwt, placeOrder);
 
-const {createCheckoutSession} = require("../controllers/order/CheckoutSession.controller")
+// Get my orders
+router.get("/my", AuthJwt, getMyOrders);
 
-router.post("/", AuthJWT, placeOrder);
-router.get("/confirm-payment", AuthJWT, confirmPayment);
-router.get("/:id/cancel", AuthJWT, cancelOrder);
-router.get("/:id/return", AuthJWT, returnOrder);
-router.get("/:id/status", AuthJWT, getOrderStatus);
-router.get("/checkout/:orderId", AuthJWT, createCheckoutSession)
+// Get single order
+router.get("/:id", AuthJwt, getOrderById);
+
+// Cancel order
+router.put("/:id/cancel", AuthJwt, cancelOrder);
+
+// Return order
+router.put("/:id/return", AuthJwt, returnOrder);
 
 module.exports = router;
