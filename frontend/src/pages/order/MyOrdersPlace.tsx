@@ -1,85 +1,122 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { fetchMyOrders } from "../../features/order/orderSlice";
-import { Package, Truck, CheckCircle } from "lucide-react";
+import { Package, Truck, CheckCircle, ShoppingBag } from "lucide-react";
+
+const statusStyles: Record<string, string> = {
+  Created: "bg-yellow-100 text-yellow-700",
+  Shipped: "bg-blue-100 text-blue-700",
+  Delivered: "bg-green-100 text-green-700",
+};
 
 const MyOrdersPage = () => {
   const dispatch = useAppDispatch();
-  const { orders, loading } = useAppSelector(
-    (state) => state.orders
-  );
+  const { orders, loading } = useAppSelector((state) => state.orders);
 
   useEffect(() => {
     dispatch(fetchMyOrders());
-  }, []);
+  }, [dispatch]);
 
+  /* Loading */
   if (loading) {
-    return <p className="text-center mt-10">Loading orders...</p>;
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <p className="text-gray-500 text-lg">Loading your orders...</p>
+      </div>
+    );
   }
 
+  /* Empty State */
   if (!orders.length) {
     return (
-      <div className="text-center mt-20 text-gray-500">
-        <Package size={48} className="mx-auto mb-3" />
-        No orders yet
+      <div className="flex flex-col items-center justify-center h-[70vh] text-center">
+        <ShoppingBag size={56} className="text-indigo-500 mb-4" />
+        <h3 className="text-xl font-semibold">No orders yet</h3>
+        <p className="text-gray-500 mt-1">
+          Once you place an order, it will appear here
+        </p>
       </div>
     );
   }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-6">My Orders</h2>
+      <h2 className="text-3xl font-bold mb-8">My Orders</h2>
 
       <div className="space-y-6">
         {orders.map((order: any) => (
           <div
             key={order._id}
-            className="bg-white rounded-xl shadow p-5"
+            className="bg-white rounded-2xl shadow-sm border p-6"
           >
-            <div className="flex justify-between mb-3">
-              <span className="font-semibold">
-                Order #{order._id.slice(-6)}
-              </span>
-              <span className="text-indigo-600 font-medium">
-                ₹{order.totalAmount}
-              </span>
+            {/* Order Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="text-sm text-gray-500">Order ID</p>
+                <p className="font-semibold">
+                  #{order._id.slice(-6)}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full ${
+                    statusStyles[order.status]
+                  }`}
+                >
+                  {order.status}
+                </span>
+
+                <p className="text-lg font-semibold text-indigo-600">
+                  ₹{order.totalAmount}
+                </p>
+              </div>
             </div>
 
-            <p className="text-sm text-gray-500">
-              Payment: {order?.payment?.status}
-            </p>
+            {/* Divider */}
+            <hr className="my-4" />
 
-            <div className="flex items-center gap-2 mt-2 text-sm">
+            {/* Payment + Status */}
+            <div className="flex items-center gap-2 text-sm text-gray-600">
               {order.status === "Created" && <Package size={16} />}
               {order.status === "Shipped" && <Truck size={16} />}
               {order.status === "Delivered" && (
                 <CheckCircle size={16} />
               )}
-              <span>{order.status}</span>
+              <span>
+                Payment:{" "}
+                <strong className="capitalize">
+                  {order?.payment?.status}
+                </strong>
+              </span>
             </div>
 
-            <div className="mt-4 space-y-2">
+            {/* Items */}
+            <div className="mt-4 space-y-3">
               {order.items.map((item: any) => (
                 <div
                   key={item._id}
                   className="flex justify-between text-sm"
                 >
-                  <span>
+                  <span className="text-gray-700">
                     {item.product.name} × {item.quantity}
                   </span>
-                  <span>₹{item.price * item.quantity}</span>
+                  <span className="font-medium">
+                    ₹{item.price * item.quantity}
+                  </span>
                 </div>
               ))}
             </div>
 
+            {/* Address */}
             <div className="mt-4 text-sm text-gray-600">
               <p>
-                <strong>Address:</strong>{" "}
-                {order.address.street}, {order.address.city},{" "}
-                {order.address.state}
+                <span className="font-medium">Address:</span>{" "}
+                {order.address}
               </p>
               <p>
-                <strong>Phone:</strong> {order.phone}
+                <span className="font-medium">Phone:</span>{" "}
+                {order.phone}
               </p>
             </div>
           </div>

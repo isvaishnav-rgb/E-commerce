@@ -1,58 +1,7 @@
-import mongoose = require("mongoose");
-import { Document, Types } from "mongoose";
-
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-/* =======================
-   TYPES & INTERFACES
-======================= */
-
-export type UserRole = "admin" | "provider" | "user";
-
-export interface IAddress {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    pincode: string;
-}
-
-export interface ICartItem {
-    product: Types.ObjectId;
-    quantity: number;
-}
-
-export interface IUser extends Document {
-    name: string;
-    email: string;
-    password: string;
-    phone: string;
-
-    role: UserRole;
-
-    address?: IAddress;
-
-    cart: ICartItem[];
-    wishlist: Types.ObjectId[];
-    orders: Types.ObjectId[];
-
-    isProviderVerified: boolean;
-    isActive: boolean;
-    refreshToken: string;
-    verified: boolean;
-    otp: string;
-
-    createdAt: Date;
-    updatedAt: Date;
-
-    isUserLoggedIn: Boolean;
-}
-
-/* =======================
-   SUB SCHEMAS
-======================= */
-
-const AddressSchema = new Schema<IAddress>(
+const AddressSchema = new Schema(
     {
         street: String,
         city: String,
@@ -63,7 +12,7 @@ const AddressSchema = new Schema<IAddress>(
     { _id: false }
 );
 
-const CartItemSchema = new Schema<ICartItem>(
+const CartItemSchema = new Schema(
     {
         product: {
             type: Schema.Types.ObjectId,
@@ -79,11 +28,7 @@ const CartItemSchema = new Schema<ICartItem>(
     { _id: false }
 );
 
-/* =======================
-   USER SCHEMA
-======================= */
-
-const UserSchema = new Schema<IUser>(
+const UserSchema = new Schema(
     {
         name: {
             type: String,
@@ -164,18 +109,17 @@ const UserSchema = new Schema<IUser>(
 
         isUserLoggedIn: {
             type: Boolean,
-            default: false
-        }
+            default: false,
+        },
+
+        resetPasswordToken: String,
+        resetPasswordExpire: Date,
+
     },
     {
         timestamps: true,
     }
 );
 
-/* =======================
-   MODEL EXPORT (COMMONJS)
-======================= */
-
-const User = mongoose.model<IUser>("User", UserSchema);
-
+const User = mongoose.model("User", UserSchema);
 module.exports = User;

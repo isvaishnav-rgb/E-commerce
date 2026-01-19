@@ -6,6 +6,7 @@ import AppRoutes from "./routes/AppRoutes";
 import { useEffect } from "react";
 import { useAppDispatch } from "./app/hooks";
 import { fetchActiveProducts } from "./features/product/productSlice";
+import { useSearchParams } from "react-router-dom";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -21,7 +22,6 @@ function App() {
         const res = await meApi();
         dispatch(loginSuccess({ getAccessToken: token, refreshToken }))
         dispatch(setUser(res.data));
-       dispatch(fetchActiveProducts());
       } catch {
         dispatch(logout());
       }
@@ -29,6 +29,22 @@ function App() {
 
     initAuth();
   }, []);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const params = {
+        search: searchParams.get("search"),
+        category: searchParams.get("category"),
+        minPrice: searchParams.get("minPrice"),
+        maxPrice: searchParams.get("maxPrice"),
+      };
+
+     dispatch(fetchActiveProducts(params))
+    };
+
+    fetchProducts();
+  }, [searchParams]);
 
   return (
     <>

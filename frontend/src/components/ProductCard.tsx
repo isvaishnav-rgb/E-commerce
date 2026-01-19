@@ -57,6 +57,9 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
      ADD / UPDATE CART
   ===================== */
   const handleCart = async () => {
+    if(!user){
+      navigate("/login")
+    }
     await dispatch(
       toggleCart({
         productId: product._id,
@@ -82,8 +85,15 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
       );
     }
 
-    navigate("/checkout");
+    navigate("/cart");
   };
+
+  const handleWishlist = (productId: any) => {
+    if(!user){
+      navigate("/login")
+    }
+    dispatch(toggleWishlist(productId))
+  }
 
   /* =====================
      UI LOGIC
@@ -96,7 +106,7 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
 
       {/* Wishlist */}
       <button
-        onClick={() => dispatch(toggleWishlist(product._id))}
+        onClick={() => handleWishlist(product._id)}
         className="absolute top-3 right-3 z-10 bg-white p-1.5 rounded-full shadow hover:scale-105 transition"
       >
         {wishlistIconDisable ? (

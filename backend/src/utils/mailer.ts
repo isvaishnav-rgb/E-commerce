@@ -22,4 +22,13 @@ const sendOtpEmail = async (to: string, otp: string) => {
   });
 };
 
-module.exports = { sendOtpEmail };
+const sendEmail = async ({ to, subject, html }: {to: string, subject: string, html: string}) => {
+  return transporter.sendMail({
+    from: `"ApnaMart" <${process.env.MAIL_USER}>`,
+    to,
+    subject,
+    html,
+  });
+};
+
+module.exports = { sendOtpEmail, sendEmail };

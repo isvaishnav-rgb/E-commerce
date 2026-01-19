@@ -120,12 +120,48 @@ export const getMyProducts = async (req: any, res: Response) => {
 
 export const getActiveProducts = async (req: Request, res: Response) => {
   try {
-    const products = await Product.find({
+    const {
+      search,
+      category,
+      minPrice,
+      maxPrice,
+      sort,
+    } = req.query;
+
+    /* ------------------------
+       BASE QUERY (IMPORTANT)
+    ------------------------- */
+    const query: any = {
       status: "Active",
       isDeleted: false,
-    })
-      
-    res.json({
+    };
+
+    /* 🔍 Search by product name */
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
+
+    /* 🏷️ Filter by category */
+    if (category) {
+      query.category = category;
+    }
+
+    /* 💰 Filter by price range */
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+
+    /* ⬇️ Sorting */
+    let sortOption: any = {};
+    if (sort === "price_asc") sortOption.price = 1;
+    if (sort === "price_desc") sortOption.price = -1;
+    if (sort === "latest") sortOption.createdAt = -1;
+
+    const products = await Product.find(query).sort(sortOption);
+
+    res.status(200).json({
       message: "Active products fetched successfully",
       count: products.length,
       products,

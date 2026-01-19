@@ -5,7 +5,7 @@ import { loginSchema } from "../../schemas/auth.schema";
 import { loginApi, meApi } from "../../api/auth.api";
 import { useDispatch } from "react-redux";
 import { loginSuccess, setUser } from "../../features/auth/authSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
 
 export default function Login() {
@@ -153,9 +153,19 @@ export default function Login() {
         {/* Footer */}
         <p className="text-center text-sm text-gray-500 mt-4">
           Don’t have an account?{" "}
+          <Link to="/signup">
           <span className="text-indigo-600 cursor-pointer hover:underline">
             Sign up
           </span>
+          </Link>
+        </p>
+        <p className="text-center text-sm text-gray-500 mt-4">
+          Don you want to {" "}
+          <Link to="/forgot-password">
+          <span className="text-indigo-600 cursor-pointer hover:underline">
+            Forgot Password
+          </span>
+          </Link>
         </p>
       </form>
     </div>

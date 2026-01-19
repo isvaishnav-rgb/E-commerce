@@ -9,7 +9,9 @@ const {
   logout,
   updateProfile,
   changePassword,
-  me
+  me,
+  forgotPassword,
+  resetPassword
 } = require("../controllers/auth/auth.controller");
 
 const authJWT = require("../middlewares/auth/AuthJWT");
@@ -34,5 +36,8 @@ router.put(
   authJWT,
   changePassword
 );
+
+router.put("/forgot-password", forgotPassword)
+router.put("/reset-password/:token", resetPassword);
 
 module.exports = router;

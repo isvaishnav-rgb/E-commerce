@@ -5,6 +5,8 @@ const {
   generateRefreshToken,
 } = require("../../utils/jwt");
 const { sendOtpEmail } = require("../../utils/mailer");
+const crypto = require("crypto");
+const {sendEmail} = require("../../utils/mailer");
 
 /* =====================s
    HELPERS
@@ -313,6 +315,113 @@ const me = async (req: any, res: any) => {
   res.json(user);
 };
 
+const forgotPassword = async (req: any, res: any) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    // Security: don't reveal user existence
+    if (!user) {
+      return res.json({
+        message: "If the email exists, a reset link has been sent",
+      });
+    }
+
+    /* ===============================
+       GENERATE TOKEN
+    =============================== */
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 mins
+
+    await user.save({ validateBeforeSave: false });
+
+    /* ===============================
+       RESET URL
+    =============================== */
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    const message = `
+      <h2>Password Reset Request</h2>
+      <p>You requested to reset your password.</p>
+      <p>Click the link below to reset it:</p>
+      <a href="${resetUrl}">Reset Password</a>
+      <p>This link expires in 15 minutes.</p>
+    `;
+
+    await sendEmail({
+      to: user.email,
+      subject: "Password Reset",
+      html: message,
+    });
+
+    res.json({
+      message: "Password reset link sent to email",
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Forgot password failed",
+      error: err.message,
+    });
+  }
+};
+
+const resetPassword = async (req: any, res: any) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid or expired token",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.json({
+      message: "Password reset successful",
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Reset password failed",
+      error: err.message,
+    });
+  }
+};
 
 module.exports = {
   signup,
@@ -322,5 +431,7 @@ module.exports = {
   logout,
   changePassword,
   updateProfile,
+  forgotPassword,
+   resetPassword,
   me 
 };

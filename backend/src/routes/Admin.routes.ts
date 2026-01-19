@@ -11,7 +11,7 @@ const {
 const {
   updateOrderStatus,
   updatePaymentStatus,
-} = require("../controllers/admin/AdminManage.controller");
+} = require("../controllers/admin/adminManage.controller");
 
 const protect = require("../middlewares/auth/AuthJWT");
 const { allowRoles } = require("../middlewares/auth/RoleAuth");

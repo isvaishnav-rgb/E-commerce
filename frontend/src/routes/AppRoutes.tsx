@@ -5,19 +5,13 @@ import LandingPage from "../pages/landingPage/LandingPage";
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
 import OtpVerification from "../pages/auth/OtpVerification";
-import MyOrdersPage from "../pages/order/MyOrdersPlace";
 
 // Service provider
 import ServiceProviderForm from "../pages/serviceProvider/ServiceProviderForm";
 import ServiceProviderDashboard from "../pages/serviceProvider/ServiceProviderDashboard";
-
-// User pages
-// import Cart from "../pages/cart/Cart";
-// import Wishlist from "../pages/wishlist/Wishlist";
-// import Profile from "../pages/profile/Profile";
+import MyOrdersPage from "../pages/order/MyOrdersPlace";
 
 // // Admin pages
-// import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminLayout from "../pages/admin/AdminLayout";
 import ProviderApplications from "../pages/admin/ProviderApplications";
 import Products from "../pages/admin/Products";
@@ -33,6 +27,8 @@ import ServiceProviderPage from "../pages/serviceProvider/ServiceProviderPage";
 import CheckoutPage from "../pages/product/CartProduct";
 import WishlistPage from "../pages/product/WishlistPage";
 import PaymentPage from "../pages/payment/Payment";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 
 const AppRoutes = () => {
   return (
@@ -42,12 +38,11 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/verify" element={<OtpVerification />} />
+      <Route path="/forgot-password" element={<ForgotPassword/>} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       {/* ================= USER ROUTES ================= */}
       <Route element={<ProtectedRoute />}>
-        {/* <Route path="/profile" element={<Profile />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/wishlist" element={<Wishlist />} /> */}
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/become-provider" element={<ServiceProviderForm />} />
         <Route path="/update-profile" element={<UpdateProfile />} />
@@ -71,7 +66,6 @@ const AppRoutes = () => {
 
       {/* ================= ADMIN ROUTES ================= */}
       <Route element={<RoleRoute allowedRoles={["admin"]} />}>
-        {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="providers" element={<ProviderApplications />} />
           <Route path="users" element={<Users />} />
