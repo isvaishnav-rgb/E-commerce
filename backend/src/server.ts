@@ -1,14 +1,14 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const DBConnnect = require("../src/config/DBConnect")
-const createDefaultAdmin = require("../src/config/createDefaultAdmin")
+const DBConnnect = require("./config/DBConnect")
+const createDefaultAdmin = require("./config/createDefaultAdmin")
 const cors = require("cors")
-const authRoutes = require("../src/routes/Auth.routes")
-const productRoutes = require("../src/routes/Product.routes")
-const providerRoutes = require("../src/routes/ServiceProvider.routes")
-const orderRoutes = require("../src/routes/Order.routes")
-const adminRoutes = require("../src/routes/Admin.routes")
-const paymentRoute = require("../src/routes/payment.routes")
+const authRoutes = require("./routes/Auth.routes")
+const productRoutes = require("./routes/Product.routes")
+const providerRoutes = require("./routes/ServiceProvider.routes")
+const orderRoutes = require("./routes/Order.routes")
+const adminRoutes = require("./routes/Admin.routes")
+const paymentRoute = require("./routes/payment.routes")
 
 dotenv.config()
 DBConnnect().then(() => {
