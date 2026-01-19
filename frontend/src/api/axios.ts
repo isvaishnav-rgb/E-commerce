@@ -3,7 +3,7 @@ import { store } from "../app/store";
 import { logout, setAccessToken } from "../features/auth/authSlice";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
 /* -----------------------
@@ -36,7 +36,7 @@ api.interceptors.response.use(
           localStorage.getItem("refreshToken");
 
         const res = await axios.post(
-          "http://localhost:3000/auth/refresh",
+          `${import.meta.env.VITE_API_BASE_URL}/auth/refresh`,
           { refreshToken }
         );
 
