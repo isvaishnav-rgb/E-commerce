@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express = require("express");
+const { createCheckoutSession } = require("../controllers/payment/CheckoutSession.controller");
+const { getPaymentStatus } = require("../controllers/payment/getPaymentStatus");
+const { stripeWebhook } = require("../controllers/payment/stripeWebbook");
+const { createCODPayment } = require("../controllers/payment/CODPayment.controller");
+const AuthJwt = require("../middlewares/auth/AuthJWT");
+const router = express.Router();
+router.post("/checkout/:orderId", AuthJwt, createCheckoutSession);
+router.post("/cod", AuthJwt, createCODPayment);
+router.get("/status/:orderId", AuthJwt, getPaymentStatus);
+router.post("/stripe/webhook", express.raw({ type: "application/json" }), stripeWebhook);
+module.exports = router;

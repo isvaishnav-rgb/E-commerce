@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express = require("express");
+const { placeOrder, } = require("../controllers/order/PlaceOrder.controller");
+const { getMyOrders, } = require("../controllers/order/GetMyOrders");
+const { getOrderById, } = require("../controllers/order/GetOrderById");
+const { cancelOrder, } = require("../controllers/order/CancelOrder.controller");
+const { returnOrder, } = require("../controllers/order/ReturnOrder.controller");
+const AuthJwt = require("../middlewares/auth/AuthJWT");
+const router = express.Router();
+router.post("/", AuthJwt, placeOrder);
+router.get("/my", AuthJwt, getMyOrders);
+router.get("/:id", AuthJwt, getOrderById);
+router.put("/:id/cancel", AuthJwt, cancelOrder);
+router.put("/:id/return", AuthJwt, returnOrder);
+module.exports = router;

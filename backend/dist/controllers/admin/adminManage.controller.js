@@ -1,0 +1,91 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const Order = require("../../models/Order.model");
+/* ===============================
+   UPDATE ORDER STATUS
+=============================== */
+const updateOrderStatus = async (req, res) => {
+    try {
+        const { orderStatus } = req.body;
+        const allowedStatuses = [
+            "Pending",
+            "Confirmed",
+            "Cancelled",
+            "Shipped",
+            "Delivered",
+            "Returned",
+        ];
+        if (!allowedStatuses.includes(orderStatus)) {
+            return res.status(400).json({
+                message: "Invalid order status",
+            });
+        }
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({
+                message: "Order not found",
+            });
+        }
+        // Prevent updates after cancellation
+        if (order.status === "Cancelled") {
+            return res.status(400).json({
+                message: "Cancelled order cannot be updated",
+            });
+        }
+        order.status = orderStatus;
+        await order.save();
+        res.json({
+            message: "Order status updated successfully",
+            order,
+        });
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to update order status",
+            err: err.message,
+        });
+    }
+};
+/* ===============================
+   UPDATE PAYMENT STATUS
+=============================== */
+const updatePaymentStatus = async (req, res) => {
+    try {
+        const { paymentStatus } = req.body;
+        const allowedPayments = ["Pending", "Success", "Failed"];
+        if (!allowedPayments.includes(paymentStatus)) {
+            return res.status(400).json({
+                message: "Invalid payment status",
+            });
+        }
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({
+                message: "Order not found",
+            });
+        }
+        order.paymentStatus = paymentStatus;
+        // Auto update order status
+        if (paymentStatus === "Success") {
+            order.orderStatus = "Paid";
+        }
+        if (paymentStatus === "Failed") {
+            order.orderStatus = "Pending";
+        }
+        await order.save();
+        res.json({
+            message: "Payment status updated successfully",
+            order,
+        });
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to update payment status",
+            err: err.message,
+        });
+    }
+};
+module.exports = {
+    updateOrderStatus,
+    updatePaymentStatus,
+};
