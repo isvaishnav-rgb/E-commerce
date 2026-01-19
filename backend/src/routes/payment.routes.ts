@@ -8,6 +8,9 @@ const {
 const {
     stripeWebhook,
 } = require("../controllers/payment/stripeWebbook");
+const {
+    createCODPayment,
+} = require("../controllers/payment/CODPayment.controller");
 
 const AuthJwt = require("../middlewares/auth/AuthJWT");
 
@@ -22,6 +25,13 @@ router.post(
     "/checkout/:orderId",
     AuthJwt,
     createCheckoutSession
+);
+
+// Create COD payment
+router.post(
+    "/cod",
+    AuthJwt,
+    createCODPayment
 );
 
 // Get payment status (polling / refresh)

@@ -126,7 +126,13 @@ export const getActiveProducts = async (req: Request, res: Response) => {
       minPrice,
       maxPrice,
       sort,
+      page = 1,
+      limit = 12
     } = req.query;
+
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const skip = (pageNum - 1) * limitNum;
 
     /* ------------------------
        BASE QUERY (IMPORTANT)
@@ -154,17 +160,29 @@ export const getActiveProducts = async (req: Request, res: Response) => {
     }
 
     /* ⬇️ Sorting */
-    let sortOption: any = {};
-    if (sort === "price_asc") sortOption.price = 1;
-    if (sort === "price_desc") sortOption.price = -1;
-    if (sort === "latest") sortOption.createdAt = -1;
+    let sortOption: any = { createdAt: -1 };
+    if (sort === "price_asc") sortOption = { price: 1 };
+    if (sort === "price_desc") sortOption = { price: -1 };
+    if (sort === "latest") sortOption = { createdAt: -1 };
 
-    const products = await Product.find(query).sort(sortOption);
+    const totalProducts = await Product.countDocuments(query);
+    const products = await Product.find(query)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalPages = Math.ceil(totalProducts / limitNum);
 
     res.status(200).json({
       message: "Active products fetched successfully",
-      count: products.length,
       products,
+      pagination: {
+        currentPage: pageNum,
+        totalPages,
+        totalProducts,
+        hasNextPage: pageNum < totalPages,
+        hasPrevPage: pageNum > 1
+      }
     });
   } catch (err: any) {
     res.status(500).json({

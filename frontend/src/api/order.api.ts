@@ -20,3 +20,7 @@ export const placeOrderApi = (data: {
 }) => {
   return axios.post("/order", data);
 };
+
+export const createCODPaymentApi = (orderId: string) => {
+  return axios.post("/payment/cod", { orderId });
+};

@@ -177,7 +177,7 @@ const Header = () => {
           {/* Right Section */}
           <div className="flex items-center gap-4">
 
-            {user && (
+            {user?.role !== "admin" && (
               <Link
                 to="/wishlist"
                 className={`relative p-2 rounded-full transition
@@ -197,7 +197,7 @@ const Header = () => {
             )}
 
             {/* Cart */}
-            {user && (
+            {user?.role !=="admin" && (
               <Link
                 to="/cart"
                 className={`relative p-2 rounded-full transition

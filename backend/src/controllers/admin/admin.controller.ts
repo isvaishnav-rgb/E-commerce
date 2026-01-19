@@ -1,6 +1,6 @@
 const User = require("../../models/User.model");
-const Product = require("../../models/Product.model");
-const Order = require("../../models/Order.model");
+const Product = require("../../models/Product.model").default;
+const Order = require("../../models/Order.model").default;
 const ServiceProviderApplication = require("../../models/ServiceProviderApplication.model").default;
 
 /* ===============================
@@ -31,7 +31,10 @@ const getProviderActivities = async (req: any, res: any) => {
       })
     );
 
-    res.json(data);
+    res.json({
+      message: "Provider activities fetched successfully",
+      data
+    });
   } catch (err: any) {
     res.status(500).json({
       message: "Failed to fetch provider activity",
@@ -47,7 +50,7 @@ const reviewProviderApplication = async (req: any, res: any) => {
   try {
     const { status, adminRemark } = req.body;
 
-    if (!["Approved", "Rejected"].includes(status)) {
+    if (!['Approved', 'Rejected'].includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
     }
 
@@ -79,6 +82,81 @@ const reviewProviderApplication = async (req: any, res: any) => {
     res.status(500).json({
       message: "Review failed",
       err: err.message,
+    });
+  }
+};
+
+/* ===============================
+   APPROVE PROVIDER APPLICATION
+=============================== */
+const approveProviderApplication = async (req: any, res: any) => {
+  try {
+    const { adminRemark } = req.body;
+    const applicationId = req.params.id;
+
+    const application = await ServiceProviderApplication.findById(applicationId).populate("user");
+
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    if (application.status !== "Pending") {
+      return res.status(400).json({ message: "Application already reviewed" });
+    }
+
+    application.status = "Approved";
+    application.adminRemark = adminRemark || "Application approved";
+    application.reviewedAt = new Date();
+    await application.save();
+
+    await User.findByIdAndUpdate(application.user._id, {
+      role: "provider",
+      isActive: true,
+    });
+
+    res.json({
+      message: "Application approved successfully",
+      application,
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to approve application",
+      error: err.message,
+    });
+  }
+};
+
+/* ===============================
+   REJECT PROVIDER APPLICATION
+=============================== */
+const rejectProviderApplication = async (req: any, res: any) => {
+  try {
+    const { adminRemark } = req.body;
+    const applicationId = req.params.id;
+
+    const application = await ServiceProviderApplication.findById(applicationId).populate("user");
+
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    if (application.status !== "Pending") {
+      return res.status(400).json({ message: "Application already reviewed" });
+    }
+
+    application.status = "Rejected";
+    application.adminRemark = adminRemark || "Application rejected";
+    application.reviewedAt = new Date();
+    await application.save();
+
+    res.json({
+      message: "Application rejected successfully",
+      application,
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to reject application",
+      error: err.message,
     });
   }
 };
@@ -208,7 +286,10 @@ const getAllUsers = async (req: any, res: any) => {
       .select("name email phone role verified isActive createdAt")
       .sort({ createdAt: -1 });
 
-    res.json(users);
+    res.json({
+      message: "Users fetched successfully",
+      users
+    });
   } catch (err: any) {
     res.status(500).json({
       message: "Failed to fetch users",
@@ -217,11 +298,212 @@ const getAllUsers = async (req: any, res: any) => {
   }
 };
 
+/* ===============================
+   GET ALL APPLICATIONS (ADMIN)
+=============================== */
+const getAllApplications = async (req: any, res: any) => {
+  try {
+    const applications = await ServiceProviderApplication.find()
+      .populate("user", "name email phone")
+      .sort({ appliedAt: -1 });
+
+    console.log("Applications found:", applications.length);
+    console.log("Applications data:", applications);
+
+    res.json({
+      message: "Applications fetched successfully",
+      applications
+    });
+  } catch (err: any) {
+    console.error("Error fetching applications:", err);
+    res.status(500).json({
+      message: "Failed to fetch applications",
+      error: err.message
+    });
+  }
+};
+
+/* ===============================
+   GET APPLICATION BY ID (ADMIN)
+=============================== */
+const getApplicationById = async (req: any, res: any) => {
+  try {
+    const applicationId = req.params.id;
+
+    const application = await ServiceProviderApplication.findById(applicationId)
+      .populate("user", "name email phone role verified isActive createdAt");
+
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    res.json({
+      message: "Application details fetched successfully",
+      application
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to fetch application details",
+      error: err.message
+    });
+  }
+};
+
+/* ===============================
+   GET ALL PRODUCTS (ADMIN)
+=============================== */
+const getAllProducts = async (req: any, res: any) => {
+  try {
+    const { status } = req.query;
+    
+    let filter: any = { isDeleted: false };
+    if (status) {
+      filter.status = status;
+    }
+
+    const products = await Product.find(filter)
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      message: "Products fetched successfully",
+      products
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to fetch products",
+      error: err.message
+    });
+  }
+};
+
+/* ===============================
+   APPROVE/REJECT PRODUCT (ADMIN)
+=============================== */
+const reviewProduct = async (req: any, res: any) => {
+  try {
+    const { status } = req.body;
+    const productId = req.params.id;
+
+    if (!["Active", "Rejected"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    product.status = status;
+    await product.save();
+
+    res.json({
+      message: `Product ${status.toLowerCase()}`,
+      product
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Product review failed",
+      error: err.message
+    });
+  }
+};
+
+/* ===============================
+   REMOVE USER (ADMIN)
+=============================== */
+const removeUser = async (req: any, res: any) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.role === "admin") {
+      return res.status(400).json({ message: "Cannot remove admin user" });
+    }
+
+    user.isActive = false;
+    await user.save();
+
+    res.json({ message: "User removed successfully" });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to remove user",
+      error: err.message
+    });
+  }
+};
+
+/* ===============================
+   GET ALL ORDERS (ADMIN)
+=============================== */
+const getAllOrders = async (req: any, res: any) => {
+  try {
+    const orders = await Order.find()
+      .populate("user", "name email phone")
+      .populate("items.product", "name price images")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      message: "Orders fetched successfully",
+      orders
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to fetch orders",
+      error: err.message
+    });
+  }
+};
+
+/* ===============================
+   UPDATE ORDER STATUS (ADMIN)
+=============================== */
+const updateOrderStatus = async (req: any, res: any) => {
+  try {
+    const { status } = req.body;
+    const orderId = req.params.id;
+    if (!['Pending', 'Confirmed', 'Cancelled', 'Shipped', 'Delivered', 'Returned'].includes(status)) {
+      return res.status(400).json({ message: "Invalid order status" });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    order.status = status;
+    await order.save();
+
+    res.json({
+      message: "Order status updated successfully",
+      order
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to update order status",
+      error: err.message
+    });
+  }
+};
+
 
 module.exports = {
   getProviderActivities,
   reviewProviderApplication,
+  approveProviderApplication,
+  rejectProviderApplication,
   addServiceProvider,
   removeServiceProvider,
-  getAllUsers
+  getAllUsers,
+  getAllApplications,
+  getApplicationById,
+  getAllProducts,
+  reviewProduct,
+  removeUser,
+  getAllOrders,
+  updateOrderStatus
 };

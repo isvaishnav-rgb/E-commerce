@@ -1,4 +1,4 @@
-const Order = require("../../models/Order.model");
+const Order = require("../../models/Order.model").default;
 
 /* ===============================
    UPDATE ORDER STATUS
@@ -9,10 +9,11 @@ const updateOrderStatus = async (req: any, res: any) => {
 
     const allowedStatuses = [
       "Pending",
-      "Paid",
+      "Confirmed",
+      "Cancelled",
       "Shipped",
       "Delivered",
-      "Cancelled",
+      "Returned",
     ];
 
     if (!allowedStatuses.includes(orderStatus)) {
@@ -30,22 +31,13 @@ const updateOrderStatus = async (req: any, res: any) => {
     }
 
     // Prevent updates after cancellation
-    if (order.orderStatus === "Cancelled") {
+    if (order.status === "Cancelled") {
       return res.status(400).json({
         message: "Cancelled order cannot be updated",
       });
     }
 
-    order.orderStatus = orderStatus;
-
-    // Auto-sync payment status
-    if (orderStatus === "Paid") {
-      order.paymentStatus = "Success";
-    }
-
-    if (orderStatus === "Cancelled") {
-      order.paymentStatus = "Failed";
-    }
+    order.status = orderStatus;
 
     await order.save();
 

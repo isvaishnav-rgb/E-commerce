@@ -8,11 +8,25 @@ import { setWishlist, setCart } from "../auth/authSlice";
 
 interface ProductState {
   products: any[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalProducts: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
   loading: boolean;
 }
 
 const initialState: ProductState = {
   products: [],
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalProducts: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  },
   loading: false,
 };
 
@@ -71,7 +85,8 @@ const productSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchActiveProducts.fulfilled, (state, action) => {
-        state.products = action.payload;
+        state.products = action.payload.products;
+        state.pagination = action.payload.pagination;
         state.loading = false;
       })
       .addCase(fetchActiveProducts.rejected, (state) => {

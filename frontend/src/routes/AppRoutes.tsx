@@ -16,6 +16,7 @@ import AdminLayout from "../pages/admin/AdminLayout";
 import ProviderApplications from "../pages/admin/ProviderApplications";
 import Products from "../pages/admin/Products";
 import Users from "../pages/admin/Users";
+import Orders from "../pages/admin/Orders";
 
 // Guards
 import ProtectedRoute from "./ProtectedRoute";
@@ -29,12 +30,14 @@ import WishlistPage from "../pages/product/WishlistPage";
 import PaymentPage from "../pages/payment/Payment";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
+import ProductDetailsPage from "../pages/landingPage/ProductDetails";
 
 const AppRoutes = () => {
   return (
     <Routes>
       {/* ================= PUBLIC ROUTES ================= */}
       <Route path="/" element={<LandingPage />} />
+      <Route path="/:productId" element={<ProductDetailsPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/verify" element={<OtpVerification />} />
@@ -70,6 +73,7 @@ const AppRoutes = () => {
           <Route path="providers" element={<ProviderApplications />} />
           <Route path="users" element={<Users />} />
           <Route path="products" element={<Products />} />
+          <Route path="orders" element={<Orders />} />
         </Route>
       </Route>
 

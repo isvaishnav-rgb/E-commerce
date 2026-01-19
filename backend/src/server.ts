@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const DBConnnect = require("../src/config/DBConnect")
+const createDefaultAdmin = require("../src/config/createDefaultAdmin")
 const cors = require("cors")
 const authRoutes = require("../src/routes/Auth.routes")
 const productRoutes = require("../src/routes/Product.routes")
@@ -10,7 +11,9 @@ const adminRoutes = require("../src/routes/Admin.routes")
 const paymentRoute = require("../src/routes/payment.routes")
 
 dotenv.config()
-DBConnnect();
+DBConnnect().then(() => {
+  createDefaultAdmin();
+});
 
 const app = express();
 app.use(
@@ -35,5 +38,6 @@ app.get("/", (req: any, res: any)=>{
 })
 
 app.listen(process.env.PORT, ()=>{
-   console.log("server is running")
+   console.log(`🚀 Server running on port ${process.env.PORT}`)
+   console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`)
 })

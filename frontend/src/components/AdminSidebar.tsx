@@ -4,6 +4,7 @@ const links = [
   { name: "Provider Applications", path: "providers" },
   { name: "Users", path: "users" },
   { name: "Products", path: "products" },
+  { name: "Orders", path: "orders" },
 ];
 
 const AdminSidebar = () => {
