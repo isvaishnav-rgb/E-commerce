@@ -1,10 +1,11 @@
-const Order = require("../../models/Order.model").default;
+import { Request, Response } from "express";
+const Order = require("../../models/Order.model");
 const User = require("../../models/User.model");
-const Product = require("../../models/Product.model").default;
+const Product = require("../../models/Product.model");
 
-const placeOrder = async (req: any, res: any) => {
+const placeOrder = async (req: Request, res:  Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req?.user?.id;
     const { items, address, phone } = req.body;
 
     /* =====================

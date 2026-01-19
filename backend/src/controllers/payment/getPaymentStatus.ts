@@ -1,6 +1,7 @@
+import { Request, Response } from "express";
 const Payment = require("../../models/payment.model");
 
-const getPaymentStatus = async (req: any, res: any) => {
+const getPaymentStatus = async (req: Request, res:  Response) => {
   try {
     const { orderId } = req.params;
 

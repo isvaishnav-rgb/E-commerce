@@ -1,13 +1,14 @@
-const ServiceProviderApplication = require("../../models/ServiceProviderApplication.model").default;
+import { Request, Response } from "express";
+const ServiceProviderApplication = require("../../models/ServiceProviderApplication.model");
 const uploadToCloudinary = require("../../utils/uploadToCloudinary");
 const User = require("../../models/User.model")
 
 /* =========================
    APPLY / UPDATE (PENDING)
 ========================= */
-const applyOrUpdateApplication = async (req: any, res: any) => {
+const applyOrUpdateApplication = async (req: any, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req?.user?.id;
     const { businessName, documentTypes, phone } = req.body;
 
     // 🔹 Fetch user
@@ -96,9 +97,9 @@ const applyOrUpdateApplication = async (req: any, res: any) => {
   }
 };
 
-const getMyServiceProviderApplication = async (req: any, res: any) => {
+const getMyServiceProviderApplication = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req?.user?.id;
 
     const application = await ServiceProviderApplication
       .findOne({ user: userId })

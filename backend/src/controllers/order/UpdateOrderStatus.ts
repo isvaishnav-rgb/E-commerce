@@ -1,6 +1,7 @@
+import { Request, Response } from "express";
 const Order = require("../../models/Order.model");
 
-const updateOrderStatus = async (req: any, res: any) => {
+const updateOrderStatus = async (req: Request, res:  Response) => {
   try {
     const { status } = req.body;
     const orderId = req.params.id;

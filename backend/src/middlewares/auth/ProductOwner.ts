@@ -1,6 +1,11 @@
-const Product = require("../../models/Product.model").default;
+import { Request, Response, NextFunction } from "express";
+const Product = require("../../models/Product.model");
 
-const isProductOwnerOrAdmin = async (req: any, res: any, next: any) => {
+const isProductOwnerOrAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const product = await Product.findById(req.params.id);
 
@@ -8,15 +13,12 @@ const isProductOwnerOrAdmin = async (req: any, res: any, next: any) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Admin → full access
-    if (req.user && req.user.role === "admin") {
+    if (req.user?.role === "admin") {
       return next();
     }
 
-    // Provider → own product only
     if (
-      req.user &&
-      req.user.role === "provider" &&
+      req.user?.role === "provider" &&
       product.createdBy.toString() === req.user.id.toString()
     ) {
       return next();
@@ -25,12 +27,18 @@ const isProductOwnerOrAdmin = async (req: any, res: any, next: any) => {
     return res.status(403).json({
       message: "You can access only your own products",
     });
-  } catch (err: any) {
+  } catch (err) {
+    if (err instanceof Error) {
+      return res.status(500).json({
+        message: "Authorization failed",
+        error: err.message,
+      });
+    }
+
     return res.status(500).json({
       message: "Authorization failed",
-      err: err.message,
     });
   }
 };
 
-module.exports = { isProductOwnerOrAdmin };
+export { isProductOwnerOrAdmin };

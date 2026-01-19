@@ -1,12 +1,10 @@
+import { Request, Response } from "express";
 const User = require("../../models/User.model");
-const Product = require("../../models/Product.model").default;
-const Order = require("../../models/Order.model").default;
-const ServiceProviderApplication = require("../../models/ServiceProviderApplication.model").default;
+const Product = require("../../models/Product.model");
+const Order = require("../../models/Order.model");
+const ServiceProviderApplication = require("../../models/ServiceProviderApplication.model");
 
-/* ===============================
-   GET ALL PROVIDER ACTIVITIES
-=============================== */
-const getProviderActivities = async (req: any, res: any) => {
+const getProviderActivities = async (req: Request, res:  Response) => {
   try {
     const providers = await User.find({ role: "provider" }).select(
       "name email phone isActive"
@@ -46,7 +44,7 @@ const getProviderActivities = async (req: any, res: any) => {
 /* ===============================
    APPROVE / REJECT APPLICATION
 =============================== */
-const reviewProviderApplication = async (req: any, res: any) => {
+const reviewProviderApplication = async (req: Request, res:  Response) => {
   try {
     const { status, adminRemark } = req.body;
 
@@ -89,7 +87,7 @@ const reviewProviderApplication = async (req: any, res: any) => {
 /* ===============================
    APPROVE PROVIDER APPLICATION
 =============================== */
-const approveProviderApplication = async (req: any, res: any) => {
+const approveProviderApplication = async (req: Request, res:  Response) => {
   try {
     const { adminRemark } = req.body;
     const applicationId = req.params.id;
@@ -129,7 +127,7 @@ const approveProviderApplication = async (req: any, res: any) => {
 /* ===============================
    REJECT PROVIDER APPLICATION
 =============================== */
-const rejectProviderApplication = async (req: any, res: any) => {
+const rejectProviderApplication = async (req: Request, res:  Response) => {
   try {
     const { adminRemark } = req.body;
     const applicationId = req.params.id;
@@ -165,7 +163,7 @@ const rejectProviderApplication = async (req: any, res: any) => {
    ADD SERVICE PROVIDER (ADMIN)
 =============================== */
 
-const addServiceProvider = async (req: any, res: any) => {
+const addServiceProvider = async (req: Request, res:  Response) => {
   try {
     const { userId } = req.body;
 
@@ -238,7 +236,7 @@ const addServiceProvider = async (req: any, res: any) => {
 /* ===============================
    REMOVE SERVICE PROVIDER
 =============================== */
-const removeServiceProvider = async (req: any, res: any) => {
+const removeServiceProvider = async (req: Request, res:  Response) => {
   try {
     const providerId = req.params.id;
 
@@ -280,7 +278,7 @@ const removeServiceProvider = async (req: any, res: any) => {
 /* ===============================
    GET ALL USERS (ADMIN)
 =============================== */
-const getAllUsers = async (req: any, res: any) => {
+const getAllUsers = async (req: Request, res:  Response) => {
   try {
     const users = await User.find()
       .select("name email phone role verified isActive createdAt")
@@ -301,7 +299,7 @@ const getAllUsers = async (req: any, res: any) => {
 /* ===============================
    GET ALL APPLICATIONS (ADMIN)
 =============================== */
-const getAllApplications = async (req: any, res: any) => {
+const getAllApplications = async (req: Request, res:  Response) => {
   try {
     const applications = await ServiceProviderApplication.find()
       .populate("user", "name email phone")
@@ -326,7 +324,7 @@ const getAllApplications = async (req: any, res: any) => {
 /* ===============================
    GET APPLICATION BY ID (ADMIN)
 =============================== */
-const getApplicationById = async (req: any, res: any) => {
+const getApplicationById = async (req: Request, res:  Response) => {
   try {
     const applicationId = req.params.id;
 
@@ -352,7 +350,7 @@ const getApplicationById = async (req: any, res: any) => {
 /* ===============================
    GET ALL PRODUCTS (ADMIN)
 =============================== */
-const getAllProducts = async (req: any, res: any) => {
+const getAllProducts = async (req: Request, res:  Response) => {
   try {
     const { status } = req.query;
     
@@ -380,7 +378,7 @@ const getAllProducts = async (req: any, res: any) => {
 /* ===============================
    APPROVE/REJECT PRODUCT (ADMIN)
 =============================== */
-const reviewProduct = async (req: any, res: any) => {
+const reviewProduct = async (req: Request, res:  Response) => {
   try {
     const { status } = req.body;
     const productId = req.params.id;
@@ -412,7 +410,7 @@ const reviewProduct = async (req: any, res: any) => {
 /* ===============================
    REMOVE USER (ADMIN)
 =============================== */
-const removeUser = async (req: any, res: any) => {
+const removeUser = async (req: Request, res:  Response) => {
   try {
     const userId = req.params.id;
 
@@ -440,7 +438,7 @@ const removeUser = async (req: any, res: any) => {
 /* ===============================
    GET ALL ORDERS (ADMIN)
 =============================== */
-const getAllOrders = async (req: any, res: any) => {
+const getAllOrders = async (req: Request, res:  Response) => {
   try {
     const orders = await Order.find()
       .populate("user", "name email phone")
@@ -462,7 +460,7 @@ const getAllOrders = async (req: any, res: any) => {
 /* ===============================
    UPDATE ORDER STATUS (ADMIN)
 =============================== */
-const updateOrderStatus = async (req: any, res: any) => {
+const updateOrderStatus = async (req: Request, res:  Response) => {
   try {
     const { status } = req.body;
     const orderId = req.params.id;

@@ -1,8 +1,9 @@
+import { Request, Response } from "express";
 const stripe = require("../../config/stripe");
 const Payment = require("../../models/payment.model");
 const Order = require("../../models/Order.model");
 
-const stripeWebhook = async (req: any, res: any) => {
+const stripeWebhook = async (req: Request, res:  Response) => {
   const sig = req.headers["stripe-signature"];
 
   let event;

@@ -1,13 +1,14 @@
-const Payment = require("../../models/payment.model").default;
-const Order = require("../../models/Order.model").default;
+import { Request, Response } from "express";
+const Payment = require("../../models/payment.model");
+const Order = require("../../models/Order.model");
 
 /* ===============================
    CREATE COD PAYMENT
 =============================== */
-const createCODPayment = async (req: any, res: any) => {
+const createCODPayment = async (req: Request, res:  Response) => {
   try {
     const { orderId } = req.body;
-    const userId = req.user.id;
+    const userId = req?.user?.id;
 
     if (!orderId) {
       return res.status(400).json({ message: "Order ID is required" });

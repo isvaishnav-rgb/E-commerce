@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 const bcrypt = require("bcryptjs");
 const User = require("../../models/User.model");
 const {
@@ -17,12 +18,11 @@ const generateOtp = () =>
 /* =====================
    SIGNUP
 ===================== */
-const signup = async (req: any, res: any) => {
+const signup = async (req: Request, res:  Response) => {
   try {
     const { name, email, password, phone } = req.body;
-
     const exists = await User.findOne({ email });
-   
+
     if (exists) {
       return res.status(400).json({ message: "Email already registered" });
     }
@@ -58,7 +58,7 @@ const signup = async (req: any, res: any) => {
 /* =====================
    VERIFY OTP
 ===================== */
-const verifyOtp = async (req: any, res: any) => {
+const verifyOtp = async (req: Request, res:  Response) => {
   try {
     const { email, otp } = req.body;
 
@@ -94,7 +94,7 @@ const verifyOtp = async (req: any, res: any) => {
 /* =====================
    LOGIN
 ===================== */
-const login = async (req: any, res: any) => {
+const login = async (req: Request, res:  Response) => {
   try {
     const { email, password } = req.body;
 
@@ -131,7 +131,7 @@ const login = async (req: any, res: any) => {
 /* =====================
    REFRESH TOKEN
 ===================== */
-const refreshToken = async (req: any, res: any) => {
+const refreshToken = async (req: Request, res:  Response) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken) {
@@ -159,7 +159,7 @@ const refreshToken = async (req: any, res: any) => {
 /* =====================
    LOGOUT
 ===================== */
-const logout = async (req: any, res: any) => {
+const logout = async (req: Request, res:  Response) => {
   try {
     const { refreshToken } = req.body;
 
@@ -184,9 +184,9 @@ const logout = async (req: any, res: any) => {
 
 //update Password
 
-const changePassword = async (req: any, res: any) => {
+const changePassword = async (req: Request, res:  Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req?.user?.id;
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
@@ -242,9 +242,9 @@ const changePassword = async (req: any, res: any) => {
 /* =====================
    UPDATE USER PROFILE
 ===================== */
-const updateProfile = async (req: any, res: any) => {
+const updateProfile = async (req: Request, res:  Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req?.user?.id;
 
     const allowedUpdates = [
       "name",
@@ -308,14 +308,14 @@ const updateProfile = async (req: any, res: any) => {
   }
 };
 
-const me = async (req: any, res: any) => {
-  const user = await User.findById(req.user.id)
+const me = async (req: Request, res:  Response) => {
+  const user = await User.findById(req?.user?.id)
     .select("-password -refreshToken -otp");
 
   res.json(user);
 };
 
-const forgotPassword = async (req: any, res: any) => {
+const forgotPassword = async (req: Request, res:  Response) => {
   try {
     const { email } = req.body;
 
@@ -377,7 +377,7 @@ const forgotPassword = async (req: any, res: any) => {
   }
 };
 
-const resetPassword = async (req: any, res: any) => {
+const resetPassword = async (req: Request, res:  Response) => {
   try {
     const { token } = req.params;
     const { password } = req.body;

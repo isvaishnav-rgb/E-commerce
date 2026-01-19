@@ -1,9 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-/* =======================
-   TYPES
-======================= */
-
 export type ApplicationStatus = "Pending" | "Approved" | "Rejected";
 
 export interface IKycDocument {
@@ -14,23 +10,15 @@ export interface IKycDocument {
 
 export interface IServiceProviderApplication extends Document {
   user: mongoose.Types.ObjectId;
-
   businessName: string;
   businessEmail: string;
   businessPhone: string;
-
   kycDocuments: IKycDocument[];
-
   status: ApplicationStatus;
   adminRemark?: string;
-
   appliedAt: Date;
   reviewedAt?: Date;
 }
-
-/* =======================
-   KYC DOCUMENT SCHEMA
-======================= */
 
 const KycDocumentSchema = new Schema<IKycDocument>(
   {
@@ -50,10 +38,6 @@ const KycDocumentSchema = new Schema<IKycDocument>(
   },
   { _id: false }
 );
-
-/* =======================
-   APPLICATION SCHEMA
-======================= */
 
 const ServiceProviderApplicationSchema =
   new Schema<IServiceProviderApplication>(
@@ -109,13 +93,9 @@ const ServiceProviderApplicationSchema =
     }
   );
 
-/* =======================
-   MODEL EXPORT
-======================= */
-
 const ServiceProviderApplication = mongoose.model<IServiceProviderApplication>(
   "ServiceProviderApplication",
   ServiceProviderApplicationSchema
 );
 
-export default ServiceProviderApplication;
+module.exports = ServiceProviderApplication;

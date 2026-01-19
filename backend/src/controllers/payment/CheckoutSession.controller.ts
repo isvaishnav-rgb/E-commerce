@@ -1,10 +1,11 @@
-const Order = require("../../models/Order.model").default;
-const Payment = require("../../models/payment.model").default;
+import { Request, Response } from "express";
+const Order = require("../../models/Order.model");
+const Payment = require("../../models/payment.model");
 const stripe = require("../../config/stripe");
 
-const createCheckoutSession = async (req: any, res: any) => {
+const createCheckoutSession = async (req: Request, res:  Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req?.user?.id;
     const { orderId } = req.params;
 
     /* =====================

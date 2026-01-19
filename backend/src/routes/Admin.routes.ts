@@ -22,146 +22,24 @@ const {
   updatePaymentStatus,
 } = require("../controllers/admin/adminManage.controller");
 
-const protect = require("../middlewares/auth/AuthJWT");
+const AuthJWT = require("../middlewares/auth/AuthJWT");
 const { allowRoles } = require("../middlewares/auth/RoleAuth");
 
-/* ===============================
-   PROVIDER ACTIVITIES
-=============================== */
-router.get(
-  "/providers/activity",
-  protect,
-  allowRoles("admin"),
-  getProviderActivities
-);
-
-/* ===============================
-   APPROVE / REJECT APPLICATION
-=============================== */
-router.put(
-  "/provider-applications/:id",
-  protect,
-  allowRoles("admin"),
-  reviewProviderApplication
-);
-
-router.put(
-  "/provider-applications/:id/approve",
-  protect,
-  allowRoles("admin"),
-  approveProviderApplication
-);
-
-router.put(
-  "/provider-applications/:id/reject",
-  protect,
-  allowRoles("admin"),
-  rejectProviderApplication
-);
-
-/* ===============================
-   ADD PROVIDER
-=============================== */
-router.post(
-  "/providers",
-  protect,
-  allowRoles("admin"),
-  addServiceProvider
-);
-
-/* ===============================
-   REMOVE PROVIDER
-=============================== */
-router.delete(
-  "/providers/:id",
-  protect,
-  allowRoles("admin"),
-  removeServiceProvider
-);
-
-router.put(
-  "/orders/:id/status",
-  protect,
-  allowRoles("admin"),
-  updateOrderStatus
-);
-
-/* ===============================
-   UPDATE PAYMENT STATUS
-=============================== */
-router.put(
-  "/orders/:id/payment",
-  protect,
-  allowRoles("admin"),
-  updatePaymentStatus
-);
-
-/* ===============================
-   USER MANAGEMENT
-=============================== */
-router.get(
-  "/users",
-  protect,
-  allowRoles("admin"),
-  getAllUsers
-);
-
-router.delete(
-  "/users/:id",
-  protect,
-  allowRoles("admin"),
-  removeUser
-);
-
-/* ===============================
-   APPLICATION MANAGEMENT
-=============================== */
-router.get(
-  "/applications",
-  protect,
-  allowRoles("admin"),
-  getAllApplications
-);
-
-router.get(
-  "/applications/:id",
-  protect,
-  allowRoles("admin"),
-  getApplicationById
-);
-
-/* ===============================
-   PRODUCT MANAGEMENT
-=============================== */
-router.get(
-  "/products",
-  protect,
-  allowRoles("admin"),
-  getAllProducts
-);
-
-router.put(
-  "/products/:id/review",
-  protect,
-  allowRoles("admin"),
-  reviewProduct
-);
-
-/* ===============================
-   ORDER MANAGEMENT
-=============================== */
-router.get(
-  "/orders",
-  protect,
-  allowRoles("admin"),
-  getAllOrders
-);
-
-router.put(
-  "/orders/:id/status",
-  protect,
-  allowRoles("admin"),
-  updateOrderStatus
-);
+router.get("/providers/activity", AuthJWT, allowRoles("admin"), getProviderActivities);
+router.put("/provider-applications/:id", AuthJWT, allowRoles("admin"), reviewProviderApplication);
+router.put("/provider-applications/:id/approve", AuthJWT, allowRoles("admin"), approveProviderApplication);
+router.put("/provider-applications/:id/reject", AuthJWT, allowRoles("admin"), rejectProviderApplication);
+router.post("/providers", AuthJWT, allowRoles("admin"), addServiceProvider);
+router.delete("/providers/:id",AuthJWT,allowRoles("admin"),removeServiceProvider);
+router.put("/orders/:id/status",AuthJWT,allowRoles("admin"),updateOrderStatus);
+router.put("/orders/:id/payment",AuthJWT,allowRoles("admin"),updatePaymentStatus);
+router.get("/users",AuthJWT,allowRoles("admin"),getAllUsers);
+router.delete("/users/:id",AuthJWT,allowRoles("admin"),removeUser);
+router.get("/applications",AuthJWT,allowRoles("admin"),getAllApplications);
+router.get("/applications/:id",AuthJWT, allowRoles("admin"),getApplicationById);
+router.get("/products",AuthJWT,allowRoles("admin"),getAllProducts);
+router.put("/products/:id/review",AuthJWT,allowRoles("admin"),reviewProduct);
+router.get("/orders",AuthJWT,allowRoles("admin"),getAllOrders);
+router.put("/orders/:id/status",AuthJWT,allowRoles("admin"),updateOrderStatus);
 
 module.exports = router;

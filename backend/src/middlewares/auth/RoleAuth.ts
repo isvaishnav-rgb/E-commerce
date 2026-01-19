@@ -1,18 +1,17 @@
-type Role = "admin" | "provider"
+import { Request, Response, NextFunction } from "express";
+import { UserRole } from "../../types/User.types";
 
 const allowRoles =
-    (...roles: Role[]) =>
-        (
-            req: any,
-            res: any,
-            next: any
-        ) => {
-            if (!req.user || !roles.includes(req.user.role)) {
-                return res.status(403).json({
-                    message: "Access denied",
-                });
-            }
-            next();
-        };
+  (...roles: UserRole[]) =>
+  (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      res.status(403).json({
+        message: "Access denied",
+      });
+      return;
+    }
 
-module.exports = { allowRoles };
+    next();
+  };
+
+export { allowRoles };

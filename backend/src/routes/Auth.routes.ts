@@ -22,21 +22,9 @@ router.post("/verify-otp", verifyOtp);
 router.post("/login", login);
 router.post("/refresh", refreshToken);
 router.post("/logout", logout);
-
 router.get("/me", authJWT, me);
-
-router.put(
-  "/profile",
-  authJWT,
-  updateProfile
-);
-
-router.put(
-  "/change-password",
-  authJWT,
-  changePassword
-);
-
+router.put("/profile", authJWT, updateProfile );
+router.put("/change-password", authJWT, changePassword );
 router.put("/forgot-password", forgotPassword)
 router.put("/reset-password/:token", resetPassword);
 

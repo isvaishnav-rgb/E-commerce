@@ -1,4 +1,4 @@
-const cloudinary = require("../config/cloudinary").default;
+const cloudinary = require("../config/cloudinary");
 
 const uploadBufferToCloudinary = (buffer: Buffer, folder: string) => {
   return new Promise((resolve, reject) => {

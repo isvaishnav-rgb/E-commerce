@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Product from "../../models/Product.model";
+const Product = require("../../models/Product.model");
 const uploadBufferToCloudinary = require("../../utils/uploadToCloudinary")
 const User = require("../../models/User.model")
 const mongoose = require("mongoose")
@@ -7,7 +7,7 @@ const mongoose = require("mongoose")
 /* =====================
    CREATE PRODUCT
 ===================== */
-export const createProduct = async (req: any, res: any) => {
+export const createProduct = async (req: any, res:  Response) => {
   try {
     let imageUrls: string[] = [];
 
@@ -22,8 +22,8 @@ export const createProduct = async (req: any, res: any) => {
     const product = await Product.create({
       ...req.body,
       images: imageUrls,
-      createdBy: req.user.id,
-      createdByRole: req.user.role,
+      createdBy: req?.user?.id,
+      createdByRole: req?.user?.role,
     });
 
     res.status(201).json({ message: "Product created", product });
@@ -36,12 +36,12 @@ export const createProduct = async (req: any, res: any) => {
 /* =====================
    UPDATE PRODUCT
 ===================== */
-export const updateProduct = async (req: any, res: Response) => {
+export const updateProduct = async (req: any, res:  Response) => {
   try {
     const updateData: any = { ...req.body };
 
     // If new images are uploaded
-    if (req.files && req.files.length > 0) {
+    if (req.files && req?.files?.length > 0) {
       const imageUrls = await Promise.all(
         req.files.map((file: Express.Multer.File) =>
           uploadBufferToCloudinary(file.buffer, "products")
@@ -91,13 +91,13 @@ export const deleteProduct = async (req: Request, res: Response) => {
 };
 
 //get particular service provider product 
-export const getMyProducts = async (req: any, res: Response) => {
+export const getMyProducts = async (req: Request, res:  Response) => {
   try {
     let filter: any = { isDeleted: false };
 
     // Provider → only own products
-    if (req.user.role === "provider") {
-      filter.createdBy = req.user.id;
+    if (req?.user?.role === "provider") {
+      filter.createdBy = req?.user?.id;
     }
 
     // Admin → all products (no createdBy filter)
@@ -192,9 +192,9 @@ export const getActiveProducts = async (req: Request, res: Response) => {
   }
 };
 
-export const toggleWishlist = async (req: any, res: Response) => {
+export const toggleWishlist = async (req: Request, res:  Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req?.user?.id;
     const { productId } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -237,9 +237,9 @@ export const toggleWishlist = async (req: any, res: Response) => {
   }
 };
 
-export const toggleCart = async (req: any, res: Response) => {
+export const toggleCart = async (req: Request, res:  Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req?.user?.id;
     const { productId, quantity = 1 } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {

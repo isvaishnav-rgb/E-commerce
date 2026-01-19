@@ -1,8 +1,9 @@
-const Order = require("../../models/Order.model").default;
+import { Request, Response } from "express";
+const Order = require("../../models/Order.model");
 
-const getMyOrders = async (req: any, res: any) => {
+const getMyOrders = async (req: Request, res:  Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req?.user?.id;
 
     const orders = await Order.find({ user: userId })
       .populate("items.product")

@@ -1,9 +1,10 @@
-const Order = require("../../models/Order.model").default;
+import { Request, Response } from "express";
+const Order = require("../../models/Order.model");
 
 /* ===============================
    UPDATE ORDER STATUS
 =============================== */
-const updateOrderStatus = async (req: any, res: any) => {
+const updateOrderStatus = async (req: Request, res:  Response) => {
   try {
     const { orderStatus } = req.body;
 
@@ -56,7 +57,7 @@ const updateOrderStatus = async (req: any, res: any) => {
 /* ===============================
    UPDATE PAYMENT STATUS
 =============================== */
-const updatePaymentStatus = async (req: any, res: any) => {
+const updatePaymentStatus = async (req: Request, res:  Response) => {
   try {
     const { paymentStatus } = req.body;
 

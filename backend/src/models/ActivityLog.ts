@@ -51,4 +51,4 @@ const ActivityLog = mongoose.model<IActivityLog>(
   ActivityLogSchema
 );
 
-export default ActivityLog;
+module.exports = ActivityLog;

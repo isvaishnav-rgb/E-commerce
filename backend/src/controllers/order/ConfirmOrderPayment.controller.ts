@@ -1,10 +1,11 @@
+import { Request, Response } from "express";
 const Payment = require("../../models/Payment.model");
 const Order = require("../../models/Order.model");
 
 /* =========================
    CONFIRM PAYMENT
 ========================= */
-const confirmPayment = async (req: any, res: any) => {
+const confirmPayment = async (req: Request, res:  Response) => {
   try {
     const { paymentIntentId } = req.body;
 

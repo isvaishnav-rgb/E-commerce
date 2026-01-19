@@ -1,44 +1,27 @@
 import mongoose, { Schema, Document } from "mongoose";
-
-/* =====================
-   Product Interface
-===================== */
-
 export interface IProduct extends Document {
   name: string;
   description: string;
-
   price: number;
   discount: number; // percentage
   finalPrice: number;
-
   images: string[];
   category: string;
   tags: string[];
-
   stock: number;
   soldCount: number;
-
   status: "Active" | "Inactive" | "OutOfStock";
-
   createdBy: mongoose.Types.ObjectId; // service provider
   createdByRole: "admin" | "provider";
-
   ratings: {
     average: number;
     count: number;
   };
-
   isFeatured: boolean;
   isDeleted: boolean;
-
   createdAt: Date;
   updatedAt: Date;
 }
-
-/* =====================
-   Product Schema
-===================== */
 
 const ProductSchema = new Schema<IProduct>(
   {
@@ -145,7 +128,6 @@ const ProductSchema = new Schema<IProduct>(
 /* =====================
    Middleware
 ===================== */
-
 ProductSchema.pre("save", function () {
   const product = this as IProduct;
 
@@ -153,7 +135,6 @@ ProductSchema.pre("save", function () {
     product.price - (product.price * product.discount) / 100;
 
 });
-
 
 // Auto calculate final price
 ProductSchema.pre("findOneAndUpdate", async function () {
@@ -176,4 +157,9 @@ ProductSchema.pre("findOneAndUpdate", async function () {
   update.$set.finalPrice = finalPrice;
 });
 
-export default mongoose.model<IProduct>("Product", ProductSchema);
+const Product = mongoose.model<IProduct>(
+  "Product",
+  ProductSchema
+);
+
+module.exports = Product;

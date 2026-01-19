@@ -1,8 +1,9 @@
+import { Request, Response } from "express";
 const Order = require("../../models/Order.model");
 
-const getOrderStatus = async (req: any, res: any) => {
+const getOrderStatus = async (req: Request, res:  Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req?.user?.id;
     const orderId = req.params.id;
 
     const order = await Order.findById(orderId).populate("payment");

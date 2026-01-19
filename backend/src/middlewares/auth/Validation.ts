@@ -1,3 +1,4 @@
+import { Request, Response, NextFunction } from "express";
 const { body, validationResult } = require("express-validator");
 
 const signupValidation = [
@@ -28,7 +29,7 @@ const signupValidation = [
     .withMessage("Phone number must be exactly 10 digits"),
 
   // FINAL VALIDATION HANDLER
-  (req: any, res: any, next: any) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({
@@ -40,6 +41,4 @@ const signupValidation = [
   },
 ];
 
-module.exports = {
-  signupValidation,
-};
+module.exports = { signupValidation };
