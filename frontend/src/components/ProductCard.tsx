@@ -116,7 +116,7 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
      CARD NAVIGATION
   ===================== */
   const handleNavigate = () => {
-    navigate(`/products/${product._id}`);
+    navigate(`/${product._id}`);
   };
 
   return (
