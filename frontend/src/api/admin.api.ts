@@ -57,8 +57,5 @@ export const deleteProductApi = (id: string) =>
 
 /* ================= ORDERS ================= */
 
-
 export const updatePaymentStatusApi = (id: string, status: string) =>
   axios.put(`/admin/orders/${id}/payment`, { paymentStatus: status });
-
-

@@ -1,9 +1,9 @@
 import { Heart, Check, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { toggleWishlist, toggleCart } from "../features/product/productSlice";
-import ProductImageCarousel from "./ProductImageCarousel";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ProductImageCarousel from "./ProductImageCarousel";
 
 const MIN_QTY = 1;
 const MAX_QTY = 10;
@@ -13,38 +13,23 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
   const navigate = useNavigate();
   const user = useAppSelector((state) => state.auth.user);
 
-  /* =====================
-     CART STATE FROM REDUX
-  ===================== */
   const cartItem = user?.cart?.find(
     (item: any) => item.product === product._id
   );
 
   const cartQuantity = cartItem?.quantity || 0;
 
-  /* =====================
-     LOCAL STATE
-  ===================== */
   const [quantity, setQuantity] = useState<number>(MIN_QTY);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  /* =====================
-     SYNC QTY FROM CART
-  ===================== */
   useEffect(() => {
     if (cartQuantity > 0) {
       setQuantity(cartQuantity);
     }
   }, [cartQuantity]);
 
-  /* =====================
-     WISHLIST
-  ===================== */
   const isWishlisted = user?.wishlist?.includes(product._id);
 
-  /* =====================
-     QUANTITY HANDLERS
-  ===================== */
   const increaseQty = (e: any) => {
     e.stopPropagation();
     if (quantity < MAX_QTY) setQuantity((prev) => prev + 1);
@@ -55,9 +40,6 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
     if (quantity > MIN_QTY) setQuantity((prev) => prev - 1);
   };
 
-  /* =====================
-     ADD / UPDATE CART
-  ===================== */
   const handleCart = async (e: any) => {
     e.stopPropagation();
 
@@ -77,9 +59,6 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
     setTimeout(() => setShowSuccess(false), 1200);
   };
 
-  /* =====================
-     BUY NOW
-  ===================== */
   const handleBuyNow = async (e: any) => {
     e.stopPropagation();
 
@@ -106,15 +85,12 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
     dispatch(toggleWishlist(product._id));
   };
 
-  /* =====================
-     UI LOGIC
-  ===================== */
   const isInCart = cartQuantity > 0;
   const isSameQuantity = quantity === cartQuantity;
+  const canInteract =
+    user?.role !== "admin" &&
+    user?._id !== product.createdBy;
 
-  /* =====================
-     CARD NAVIGATION
-  ===================== */
   const handleNavigate = () => {
     navigate(`/${product._id}`);
   };
@@ -163,7 +139,7 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
       </p>
 
       {/* Quantity Selector */}
-      <div className="mt-3 flex items-center gap-3">
+      {canInteract && <div className="mt-3 flex items-center gap-3">
         <span className="text-sm text-gray-600">Qty:</span>
 
         <div
@@ -173,11 +149,10 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
           <button
             onClick={decreaseQty}
             disabled={quantity === MIN_QTY}
-            className={`px-3 py-1 ${
-              quantity === MIN_QTY
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-gray-100"
-            }`}
+            className={`px-3 py-1 ${quantity === MIN_QTY
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100"
+              }`}
           >
             <Minus size={16} />
           </button>
@@ -189,61 +164,60 @@ const ProductCard = ({ product, wishlistIconDisable }: any) => {
           <button
             onClick={increaseQty}
             disabled={quantity === MAX_QTY}
-            className={`px-3 py-1 ${
-              quantity === MAX_QTY
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-gray-100"
-            }`}
+            className={`px-3 py-1 ${quantity === MAX_QTY
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100"
+              }`}
           >
             <Plus size={16} />
           </button>
         </div>
       </div>
+      }
 
       {/* Buttons */}
-      <div
-        className="mt-4 flex gap-2"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {isInCart && isSameQuantity && showSuccess && (
-          <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-green-600 text-white font-medium">
-            <Check size={18} /> Added
-          </button>
-        )}
+      {canInteract &&
+        <div
+          className="mt-4 flex gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {isInCart && isSameQuantity && showSuccess && (
+            <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-green-600 text-white font-medium">
+              <Check size={18} /> Added
+            </button>
+          )}
 
-        {isInCart && isSameQuantity && !showSuccess && (
+          {isInCart && isSameQuantity && !showSuccess && (
+            <button
+              disabled
+              className="w-full py-2 rounded-lg bg-green-100 text-green-700 font-medium cursor-not-allowed"
+            >
+              In Cart
+            </button>
+          )}
+
+
+          {(!isInCart || !isSameQuantity) &&
+            (
+              <button
+                onClick={handleCart}
+                className="w-full py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
+              >
+                {isInCart ? "Update Cart" : "Add to Cart"}
+              </button>
+            )
+          }
+
           <button
-            disabled
-            className="w-full py-2 rounded-lg bg-green-100 text-green-700 font-medium cursor-not-allowed"
+            onClick={handleBuyNow}
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-indigo-600 text-indigo-600 font-medium hover:bg-indigo-50 transition"
           >
-            In Cart
+            <ShoppingBag size={18} />
+            Buy Now
           </button>
-        )}
-
-        {(!isInCart || !isSameQuantity) &&
-          user?.role !== "admin" &&
-          user?._id !== product.createdBy && (
-            <button
-              onClick={handleCart}
-              className="w-full py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
-            >
-              {isInCart ? "Update Cart" : "Add to Cart"}
-            </button>
-          )}
-
-        {user?.role !== "admin" &&
-          user?._id !== product.createdBy && (
-            <button
-              onClick={handleBuyNow}
-              className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-indigo-600 text-indigo-600 font-medium hover:bg-indigo-50 transition"
-            >
-              <ShoppingBag size={18} />
-              Buy Now
-            </button>
-          )}
-      </div>
+        </div>}
     </div>
-  );
+  )
 };
 
 export default ProductCard;

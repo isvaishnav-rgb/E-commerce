@@ -8,6 +8,8 @@ const Products = () => {
   const dispatch = useAppDispatch();
   const products = useAppSelector((s: any) => s.admin.products);
 
+  const tableHeader = ["Product", "Category", "Price", "Stock", "Actions"]
+
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch]);
@@ -25,7 +27,7 @@ const Products = () => {
           Products
         </h1>
         <p className="text-sm text-gray-500">
-          Total: {products.length}
+          Total: {products?.length}
         </p>
       </div>
 
@@ -34,55 +36,52 @@ const Products = () => {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="text-left px-4 py-3">Product</th>
-              <th className="text-left px-4 py-3">Category</th>
-              <th className="text-left px-4 py-3">Price</th>
-              <th className="text-left px-4 py-3">Stock</th>
-              <th className="text-right px-4 py-3">Actions</th>
+              {tableHeader.map((tableHeading, index) => 
+              <th className="text-left px-4 py-3" key={index}>{tableHeading}</th>
+              )}
             </tr>
           </thead>
 
           <tbody>
-            {products.map((p: any) => (
+            {products && products.map((p: any) => (
               <tr
-                key={p._id}
+                key={p?._id}
                 className="border-b hover:bg-gray-50 transition"
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <img
-                      src={p.images?.[0]}
-                      alt={p.name}
+                      src={p?.images?.[0]}
+                      alt={p?.name}
                       className="w-12 h-12 rounded-md object-cover border"
                     />
                     <div>
                       <p className="font-medium text-gray-800">
-                        {p.name}
+                        {p?.name}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {p._id.slice(-6)}
+                        {p?._id.slice(-6)}
                       </p>
                     </div>
                   </div>
                 </td>
 
                 <td className="px-4 py-3 text-gray-700">
-                  {p.category}
+                  {p?.category}
                 </td>
 
                 <td className="px-4 py-3 font-medium text-gray-800">
-                  ₹{p.price}
+                  ₹{p?.price}
                 </td>
 
                 <td className="px-4 py-3">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      p.stock > 0
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${p.stock > 0
                         ? "bg-green-100 text-green-700"
                         : "bg-red-100 text-red-700"
-                    }`}
+                      }`}
                   >
-                    {p.stock}
+                    {p?.stock}
                   </span>
                 </td>
 

@@ -1,12 +1,17 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { logoutApi } from "../api/auth.api";
 import { logout } from "../features/auth/authSlice";
 
 export const LogoutButton = () => {
-  const dispatch = useDispatch();
-  const refreshToken = useSelector((state: any) => state.auth.refreshToken);
+  const dispatch = useAppDispatch();
+  const refreshToken = useAppSelector((state) => state?.auth?.refreshToken);
 
   const handleLogout = async () => {
+    if (!refreshToken) {
+      dispatch(logout());
+      return;
+    }
+
     await logoutApi(refreshToken);
     dispatch(logout());
   };

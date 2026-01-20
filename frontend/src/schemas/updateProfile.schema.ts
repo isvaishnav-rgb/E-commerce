@@ -1,18 +1,54 @@
 import { z } from "zod";
 
 export const updateProfileSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name cannot exceed 50 characters")
+    .optional(),
 
   phone: z
     .string()
-    .regex(/^\d{10}$/, "Phone must be exactly 10 digits"),
+    .trim()
+    .regex(/^[6-9]\d{9}$/, "Phone number must be a valid 10-digit Indian number")
+    .optional(),
 
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "One uppercase letter required")
-    .regex(/[a-z]/, "One lowercase letter required")
-    .regex(/[0-9]/, "One number required")
-    .optional()
-    .transform((val) => (val === "" ? undefined : val)),
+  address: z
+    .object({
+      street: z
+        .string()
+        .trim()
+        .min(3, "Street must be at least 3 characters")
+        .max(100, "Street cannot exceed 100 characters")
+        .optional(),
+
+      city: z
+        .string()
+        .trim()
+        .min(2, "City must be at least 2 characters")
+        .max(50, "City cannot exceed 50 characters")
+        .optional(),
+
+      state: z
+        .string()
+        .trim()
+        .min(2, "State must be at least 2 characters")
+        .max(50, "State cannot exceed 50 characters")
+        .optional(),
+
+      country: z
+        .string()
+        .trim()
+        .min(2, "Country must be at least 2 characters")
+        .max(50, "Country cannot exceed 50 characters")
+        .optional(),
+
+      pincode: z
+        .string()
+        .trim()
+        .regex(/^\d{6}$/, "Pincode must be a valid 6-digit number")
+        .optional(),
+    })
+    .optional(),
 });

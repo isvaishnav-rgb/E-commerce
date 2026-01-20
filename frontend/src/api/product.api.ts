@@ -1,9 +1,6 @@
 import api from "./axios";
 import type { Product } from "../types/Products";
 
-/* =====================
-   CREATE PRODUCT
-===================== */
 export const createProductApi = async (data: FormData) => {
   const res = await api.post("/product/create", data, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -11,9 +8,6 @@ export const createProductApi = async (data: FormData) => {
   return res.data;
 };
 
-/* =====================
-   UPDATE PRODUCT
-===================== */
 export const updateProductApi = async (
   id: string,
   data: FormData
@@ -24,17 +18,11 @@ export const updateProductApi = async (
   return res.data;
 };
 
-/* =====================
-   DELETE PRODUCT
-===================== */
 export const deleteProductApi = async (id: string) => {
   const res = await api.delete(`/product/${id}`);
   return res.data;
 };
 
-/* =====================
-   GET MY PRODUCTS
-===================== */
 export const getMyProductsApi = async () => {
   const res = await api.get("/product/my-products");
   return res.data.products as Product[];

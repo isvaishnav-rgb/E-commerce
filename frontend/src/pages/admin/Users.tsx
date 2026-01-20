@@ -6,6 +6,8 @@ const Users = () => {
   const dispatch = useAppDispatch();
   const { users, loading } = useAppSelector((s: any) => s.admin);
 
+  const userTableHeader = ["Name", "Email", "Phone", "Role", "Verified", "Status", "Joined"]
+
   useEffect(() => {
     dispatch(fetchUsers());
   }, [dispatch]);
@@ -36,13 +38,9 @@ const Users = () => {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="text-left px-4 py-3">Name</th>
-                <th className="text-left px-4 py-3">Email</th>
-                <th className="text-left px-4 py-3">Phone</th>
-                <th className="text-left px-4 py-3">Role</th>
-                <th className="text-center px-4 py-3">Verified</th>
-                <th className="text-center px-4 py-3">Status</th>
-                <th className="text-right px-4 py-3">Joined</th>
+                {userTableHeader.map((userTableHeading, index) =>
+                  <th className="text-left px-4 py-3" key={index}>{userTableHeading}</th>
+                )}
               </tr>
             </thead>
 
@@ -72,11 +70,10 @@ const Users = () => {
 
                   <td className="px-4 py-3 text-center">
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        u.verified
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${u.verified
                           ? "bg-green-100 text-green-700"
                           : "bg-red-100 text-red-700"
-                      }`}
+                        }`}
                     >
                       {u.verified ? "Verified" : "Unverified"}
                     </span>
@@ -84,11 +81,10 @@ const Users = () => {
 
                   <td className="px-4 py-3 text-center">
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        u.isActive
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${u.isActive
                           ? "bg-green-100 text-green-700"
                           : "bg-gray-200 text-gray-600"
-                      }`}
+                        }`}
                     >
                       {u.isActive ? "Active" : "Inactive"}
                     </span>

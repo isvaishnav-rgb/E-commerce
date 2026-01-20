@@ -12,7 +12,7 @@ const ProductImageCarousel = ({ images }: Props) => {
     <Swiper
       modules={[Pagination]}
       pagination={{ clickable: true }}
-      className="h-40 w-full rounded-lg"
+      className="h-auto w-full rounded-lg"
     >
       {images.map((img, index) => (
         <SwiperSlide key={index}>

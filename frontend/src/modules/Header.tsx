@@ -17,6 +17,7 @@ import { setApplication } from "../features/provider/providerSlice";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
+import ProductFilter from "../components/ProductFilter";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,8 +33,6 @@ const Header = () => {
   const { products } = useAppSelector(state => state.products)
 
   useEffect(() => {
-    // unique categories
-    console.log(products)
     const uniqueCategories = Array.from(
       new Set(products.map((item: any) => item.category))
     );
@@ -96,8 +95,15 @@ const Header = () => {
 
   /* Fetch provider application */
   useEffect(() => {
+    if (!user?._id) {
+      dispatch(setApplication(null));
+      setLoading(false);
+      return;
+    }
+
     const fetchApplication = async () => {
       try {
+        setLoading(true);
         const res = await getMyServiceProviderApplicationApi();
         dispatch(setApplication(res.data.application || null));
       } catch {
@@ -108,7 +114,8 @@ const Header = () => {
     };
 
     fetchApplication();
-  }, [dispatch]);
+  }, [user?._id, dispatch]);
+
 
   /* Close dropdown on outside click */
   useEffect(() => {
@@ -197,7 +204,7 @@ const Header = () => {
             )}
 
             {/* Cart */}
-            {user?.role !=="admin" && (
+            {user?.role !== "admin" && (
               <Link
                 to="/cart"
                 className={`relative p-2 rounded-full transition
@@ -451,79 +458,29 @@ const Header = () => {
         </div>
       )}
       {showFilter && (
-        <div
-          ref={filterRef}
-          className="absolute top-16 left-1/2 -translate-x-1/2 z-50 w-[90%] md:w-[600px] bg-white border rounded-2xl shadow-xl p-5"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Category */}
-            <div>
-              <label className="text-sm font-medium text-gray-600">
-                Category
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full mt-1 border rounded-lg px-3 py-2"
-              >
-                <option value="">All</option>
-                {categoryOptions.map((item) => <option key="id" value={item}>{item}</option>)}
-              </select>
-            </div>
-
-            {/* Min Price */}
-            <div>
-              <label className="text-sm font-medium text-gray-600">
-                Min Price
-              </label>
-              <input
-                type="number"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-                className="w-full mt-1 border rounded-lg px-3 py-2"
-                placeholder="₹0"
-              />
-            </div>
-
-            {/* Max Price */}
-            <div>
-              <label className="text-sm font-medium text-gray-600">
-                Max Price
-              </label>
-              <input
-                type="number"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-full mt-1 border rounded-lg px-3 py-2"
-                placeholder="₹50000"
-              />
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 mt-5">
-            <button
-              onClick={() => {
-                setCategory("");
-                setMinPrice("");
-                setMaxPrice("");
-              }}
-              className="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100"
-            >
-              Clear
-            </button>
-
-            <button
-              onClick={() => {
-                applySearchAndFilter();
-                setShowFilter(false);
-              }}
-              className="px-5 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:opacity-90"
-            >
-              Apply Filters
-            </button>
-          </div>
-        </div>
+        <ProductFilter
+          category={category}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          categoryOptions={categoryOptions}
+          onChange={(k, v) =>
+            k === "category"
+              ? setCategory(v)
+              : k === "minPrice"
+              ? setMinPrice(v)
+              : setMaxPrice(v)
+          }
+          onApply={() => {
+            applySearchAndFilter();
+            setShowFilter(false);
+          }}
+          onClear={() => {
+            setCategory("");
+            setMinPrice("");
+            setMaxPrice("");
+          }}
+          onClose={() => setShowFilter(false)}
+        />
       )}
     </header>
   );

@@ -15,6 +15,8 @@ const Orders = () => {
     dispatch(fetchOrders());
   };
 
+  const OrderStatus = ["Pending", "Confirmed", "Delivered", "Cancelled", "Returned"]
+
   if (loading) {
     return <p>Loading orders...</p>;
   }
@@ -37,23 +39,18 @@ const Orders = () => {
                   <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div className="text-right">
-                  <p><strong>Status:</strong> 
-                    <select 
-                      value={order.status} 
+                  <p><strong>Status:</strong>
+                    <select
+                      value={order.status}
                       onChange={(e) => handleStatusChange(order._id, e.target.value)}
                       className="ml-2 border rounded px-2 py-1"
                     >
-                      <option value="Pending">Pending</option>
-                      <option value="Confirmed">Confirmed</option>
-                      <option value="Shipped">Shipped</option>
-                      <option value="Delivered">Delivered</option>
-                      <option value="Cancelled">Cancelled</option>
-                      <option value="Returned">Returned</option>
+                      {OrderStatus.map((val, index) => <option value={val} key={index}>{val}</option>)}
                     </select>
                   </p>
                 </div>
               </div>
-              
+
               <div className="border-t pt-3">
                 <p><strong>Items:</strong></p>
                 {order.items?.map((item: any, index: number) => (
@@ -62,7 +59,7 @@ const Orders = () => {
                   </div>
                 ))}
               </div>
-              
+
               <div className="mt-2 text-sm text-gray-600">
                 <p><strong>Address:</strong> {order.address}</p>
                 <p><strong>Phone:</strong> {order.phone}</p>

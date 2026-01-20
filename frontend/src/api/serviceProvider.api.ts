@@ -1,4 +1,4 @@
-import axios from "./axios"; // your axios instance
+import axios from "./axios";
 
 export const applyServiceProviderApi = (formData: FormData) => {
   return axios.post("/provider/apply", formData);

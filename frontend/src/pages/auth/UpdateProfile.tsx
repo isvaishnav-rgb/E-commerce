@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateProfileSchema } from "../../schemas/updateProfile.schema";
@@ -6,10 +6,24 @@ import { updateProfileApi } from "../../api/auth.api";
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../features/auth/authSlice";
 import type { AxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
+
+type UpdateProfileForm = {
+  name?: string;
+  phone?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    pincode?: string;
+  };
+};
 
 export default function UpdateProfile() {
   const user = useSelector((state: any) => state.auth.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -19,25 +33,45 @@ export default function UpdateProfile() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+    reset,
+  } = useForm<UpdateProfileForm>({
     resolver: zodResolver(updateProfileSchema),
-    defaultValues: {
-      name: user?.name,
-      phone: user?.phone,
-      password: "",
-    },
   });
 
-  const onSubmit = async (data: any) => {
+  /**
+   * ✅ IMPORTANT
+   * Sync Redux user → form values
+   */
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || "",
+        phone: user.phone || "",
+        address: {
+          street: user.address?.street || "",
+          city: user.address?.city || "",
+          state: user.address?.state || "",
+          country: user.address?.country || "",
+          pincode: user.address?.pincode || "",
+        },
+      });
+    }
+  }, [user, reset]);
+
+  const onSubmit = async (data: UpdateProfileForm) => {
     try {
       setLoading(true);
       setError(null);
+      setSuccess(null);
 
-      const payload = data.password ? data : { ...data, password: undefined };
-      const res = await updateProfileApi(payload);
+      const res = await updateProfileApi(data);
 
       dispatch(setUser(res.data.user));
       setSuccess("✅ Profile updated successfully!");
+
+      setTimeout(()=>{
+        navigate("/")
+      }, 3000)
     } catch (err) {
       const e = err as AxiosError<any>;
       setError(e.response?.data?.message || "Update failed");
@@ -75,7 +109,7 @@ export default function UpdateProfile() {
           <label className="text-sm font-medium">Name</label>
           <input
             {...register("name")}
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-300"
+            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
           {errors.name && (
             <p className="text-xs text-red-500 mt-1">
@@ -89,7 +123,7 @@ export default function UpdateProfile() {
           <label className="text-sm font-medium">Phone</label>
           <input
             {...register("phone")}
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-300"
+            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
           {errors.phone && (
             <p className="text-xs text-red-500 mt-1">
@@ -97,6 +131,50 @@ export default function UpdateProfile() {
             </p>
           )}
         </div>
+
+        {/* ADDRESS */}
+        <h3 className="text-sm font-semibold mb-2 mt-6">Address</h3>
+
+        <div className="mb-3">
+          <input
+            {...register("address.street")}
+            placeholder="Street"
+            className="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div className="mb-3">
+          <input
+            {...register("address.city")}
+            placeholder="City"
+            className="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div className="mb-3">
+          <input
+            {...register("address.state")}
+            placeholder="State"
+            className="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div className="mb-3">
+          <input
+            {...register("address.country")}
+            placeholder="Country"
+            className="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div className="mb-6">
+          <input
+            {...register("address.pincode")}
+            placeholder="Pincode"
+            className="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
+
         {/* BUTTON */}
         <button
           disabled={loading}

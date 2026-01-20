@@ -1,12 +1,12 @@
 import { meApi } from "./api/auth.api";
 import { setUser, logout, loginSuccess } from "./features/auth/authSlice";
-import Header from "./modules/Header";
-import Footer from "./modules/Footer";
-import AppRoutes from "./routes/AppRoutes";
 import { useEffect } from "react";
 import { useAppDispatch } from "./app/hooks";
 import { fetchActiveProducts } from "./features/product/productSlice";
 import { useSearchParams } from "react-router-dom";
+import Header from "./modules/Header";
+import Footer from "./modules/Footer";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -32,7 +32,7 @@ function App() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchProducts = () => {
       const params = {
         search: searchParams.get("search"),
         category: searchParams.get("category"),
