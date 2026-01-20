@@ -40,7 +40,7 @@ const signup = async (req: Request, res:  Response) => {
       refreshToken: ""
     });
 
-    await sendOtpEmail(email, otp);
+    //await sendOtpEmail(email, otp);
 
     const userObj = user.toObject();
     delete userObj.password;
