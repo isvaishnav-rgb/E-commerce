@@ -51,8 +51,8 @@ const createCheckoutSession = async (req, res) => {
             mode: "payment",
             payment_method_types: ["card"],
             line_items: lineItems,
-            success_url: `${process.env.FRONTEND_URL}/payment-success?orderId=${order._id}`,
-            cancel_url: `${process.env.FRONTEND_URL}/payment-cancel?orderId=${order._id}`,
+            // success_url: `${process.env.FRONTEND_URL}/payment-success?orderId=${order._id}`,
+            // cancel_url: `${process.env.FRONTEND_URL}/payment-cancel?orderId=${order._id}`,
             metadata: {
                 orderId: order._id.toString(),
                 userId,

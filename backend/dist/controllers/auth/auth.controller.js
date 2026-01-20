@@ -31,7 +31,7 @@ const signup = async (req, res) => {
             verified: false,
             refreshToken: ""
         });
-        await sendOtpEmail(email, otp);
+        //await sendOtpEmail(email, otp);
         const userObj = user.toObject();
         delete userObj.password;
         delete userObj.otp;
@@ -209,7 +209,6 @@ const updateProfile = async (req, res) => {
             "city",
             "state",
             "pincode",
-            "avatar",
         ];
         const updates = {};
         allowedUpdates.forEach((field) => {

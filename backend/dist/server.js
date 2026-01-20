@@ -16,13 +16,11 @@ DBConnnect().then(() => {
     createDefaultAdmin();
 });
 const app = express();
-app.use(
-  cors({
+app.use(cors({
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+}));
 app.use(express.json());
 //routes
 app.use("/auth", authRoutes);
