@@ -253,7 +253,6 @@ const updateProfile = async (req: Request, res:  Response) => {
       "city",
       "state",
       "pincode",
-      "avatar",
     ];
 
     const updates: any = {};
