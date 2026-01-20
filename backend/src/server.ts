@@ -18,8 +18,9 @@ DBConnnect().then(() => {
 const app = express();
 app.use(
   cors({
-    origin: "https://e-commerce-6-su5k.onrender.com/",
-    credentials: true,
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
