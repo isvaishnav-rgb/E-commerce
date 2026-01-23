@@ -8,6 +8,8 @@ import { loginSuccess, setUser } from "../../features/auth/authSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
 
+import { Box, Typography, TextField, Button, Alert } from "@mui/material";
+
 export default function OtpVerification() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -20,18 +22,13 @@ export default function OtpVerification() {
 
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
-  /* -------------------------------
-     Guard Direct Access
-  -------------------------------- */
+  // Guard direct access
   useEffect(() => {
     if (!state?.email) {
       navigate("/signup");
     }
   }, [state, navigate]);
 
-  /* -------------------------------
-     React Hook Form
-  -------------------------------- */
   const {
     register,
     handleSubmit,
@@ -45,16 +42,13 @@ export default function OtpVerification() {
     },
   });
 
-  /* -------------------------------
-     OTP HANDLERS
-  -------------------------------- */
+  // OTP Handlers
   const handleChange = (value: string, index: number) => {
     if (!/^\d?$/.test(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-
     setValue("otp", newOtp.join(""));
 
     if (value && index < 5) {
@@ -86,130 +80,131 @@ export default function OtpVerification() {
     });
   };
 
-  /* -------------------------------
-     SUBMIT
-  -------------------------------- */
   const onSubmit = async (data: any) => {
     try {
       setLoading(true);
       setServerError(null);
 
       const res = await verifyOtpApi(data);
-      
       const { accessToken, refreshToken } = res.data;
 
-      // ✅ STORE TOKENS IN LOCAL STORAGE
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
 
       dispatch(loginSuccess(res.data));
-
       const resUser = await meApi();
-      dispatch(setUser(resUser.data))
+      dispatch(setUser(resUser.data));
 
-      // ✅ Success message
       setSuccessMessage("🎉 Your account has been verified successfully!");
 
-      // ⏳ Redirect after delay
       setTimeout(() => {
         navigate("/");
       }, 2000);
     } catch (err) {
       const error = err as AxiosError<any>;
-      setServerError(
-        error.response?.data?.message || "OTP verification failed"
-      );
+      setServerError(error.response?.data?.message || "OTP verification failed");
     } finally {
       setLoading(false);
     }
   };
 
-  /* -------------------------------
-     UI
-  -------------------------------- */
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        bgcolor: "#f3f4f6", // gray-100
+        p: 2,
+      }}
+    >
+      <Box
+        component="form"
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg"
+        sx={{
+          width: "100%",
+          maxWidth: 400,
+          bgcolor: "white",
+          p: 4,
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
       >
-        <h2 className="text-2xl font-bold text-center mb-2">
+        <Typography variant="h5" fontWeight={600} textAlign="center" mb={1}>
           Verify Your Email 📩
-        </h2>
-        <p className="text-sm text-center text-gray-500 mb-6">
+        </Typography>
+        <Typography variant="body2" color="textSecondary" textAlign="center" mb={3}>
           Enter the 6-digit OTP sent to your email
-        </p>
+        </Typography>
 
-        {/* ✅ Success Message */}
         {successMessage && (
-          <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700 text-center">
+          <Alert severity="success" sx={{ mb: 2 }}>
             {successMessage}
-          </div>
+          </Alert>
         )}
 
-        {/* 🔴 Error Message */}
         {serverError && (
-          <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600 text-center">
+          <Alert severity="error" sx={{ mb: 2 }}>
             {serverError}
-          </div>
+          </Alert>
         )}
 
-        {/* Email */}
-        <input
-          {...register("email")}
+        {/* Email Field */}
+        <TextField
+          fullWidth
           disabled
-          className="w-full mb-4 rounded-md border bg-gray-100 px-3 py-2 text-sm cursor-not-allowed"
+          {...register("email")}
+          sx={{ mb: 3 }}
         />
 
         {/* OTP Inputs */}
-        <div className="flex justify-between gap-2 mb-4">
+        <Box display="flex" justifyContent="space-between" mb={3} sx={{gap: "15px"}}>
           {otp.map((_, index) => (
-            <input
+            <TextField
               key={index}
-              ref={(el) => {
-                inputsRef.current[index] = el;
-              }}
-              type="text"
-              maxLength={1}
+              inputRef={(el) => (inputsRef.current[index] = el)}
+              value={otp[index]}
               onChange={(e) => handleChange(e.target.value, index)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
+              onKeyDown={(e) => handleKeyDown(e as React.KeyboardEvent<HTMLInputElement>, index)}
               onPaste={handlePaste}
               disabled={!!successMessage}
-              className={`w-12 h-12 text-center text-lg font-semibold rounded-md border focus:outline-none focus:ring-2 ${
-                errors.otp
-                  ? "border-red-400 focus:ring-red-300"
-                  : "border-gray-300 focus:ring-indigo-300"
-              }`}
+              inputProps={{
+                maxLength: 1,
+                style: { textAlign: "center", fontSize: "1.25rem", width: "3rem", height: "1rem" },
+              }}
+              error={!!errors.otp}
             />
           ))}
-        </div>
-
+        </Box>
         {errors.otp && (
-          <p className="text-xs text-red-500 text-center mb-4">
+          <Typography variant="caption" color="error" textAlign="center" display="block" mb={2}>
             {errors.otp.message}
-          </p>
+          </Typography>
         )}
 
-        {/* Submit */}
-        <button
+        {/* Submit Button */}
+        <Button
           type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
           disabled={loading || !!successMessage}
-          className="w-full rounded-md bg-indigo-600 py-2 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-60"
         >
           {successMessage
             ? "Verified ✓"
             : loading
             ? "Verifying..."
             : "Verify OTP"}
-        </button>
+        </Button>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <Typography variant="body2" color="textSecondary" textAlign="center" mt={2}>
           Didn’t receive OTP?{" "}
-          <span className="text-indigo-600 cursor-pointer hover:underline">
+          <Box component="span" sx={{ color: "primary.main", cursor: "pointer", textDecoration: "underline" }}>
             Resend
-          </span>
-        </p>
-      </form>
-    </div>
+          </Box>
+        </Typography>
+      </Box>
+    </Box>
   );
 }

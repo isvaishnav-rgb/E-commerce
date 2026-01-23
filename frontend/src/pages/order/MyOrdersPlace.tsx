@@ -112,7 +112,11 @@ const MyOrdersPage = () => {
             <div className="mt-4 text-sm text-gray-600">
               <p>
                 <span className="font-medium">Address:</span>{" "}
-                {order.address}
+                 Street: {order?.address?.street}, 
+                 City: {order?.address?.city},  
+                 State: {order?.address?.state}, 
+                 PinCode: {order?.address?.pincode}, 
+                 Country: {order?.address?.country}
               </p>
               <p>
                 <span className="font-medium">Phone:</span>{" "}

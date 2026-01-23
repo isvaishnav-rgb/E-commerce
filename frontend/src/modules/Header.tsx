@@ -1,14 +1,8 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import {
-  ShoppingCart,
-  Menu,
-  X,
   ChevronDown,
-  User,
-  Lock,
-  LogOut,
-  Heart
+  ChevronUp
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { logout } from "../features/auth/authSlice";
@@ -18,6 +12,23 @@ import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import ProductFilter from "../components/ProductFilter";
+import Logo from "../components/Logo";
+import CustomizedInputBase from "../components/SearchInput";
+import Button from "@mui/material/Button";
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import Avatar from '@mui/material/Avatar';
+import { deepOrange } from '@mui/material/colors';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
+import RecentActorsIcon from '@mui/icons-material/RecentActors';
+import CallToActionIcon from '@mui/icons-material/CallToAction';
+import LogoutIcon from '@mui/icons-material/Logout';
+import MenuIcon from '@mui/icons-material/Menu';
+import ClearIcon from '@mui/icons-material/Clear';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +42,9 @@ const Header = () => {
   const filterRef = useRef<HTMLDivElement | null | any>(null);
   const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
   const { products } = useAppSelector(state => state.products)
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const uniqueCategories = Array.from(
@@ -71,7 +85,43 @@ const Header = () => {
     navigate(`/?${params.toString()}`);
   };
 
-  const location = useLocation();
+  const clearFilters = () => {
+    setSearch("");
+    setCategory("");
+    setMinPrice("");
+    setMaxPrice("");
+
+    navigate("/", { replace: true });
+    setShowFilter(false);
+  };
+
+  useEffect(() => {
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+
+    searchTimeout.current = setTimeout(() => {
+      const params = new URLSearchParams(location.search);
+
+      if (search.trim()) {
+        params.set("search", search.trim());
+      } else {
+        params.delete("search"); // ✅ important for empty search
+      }
+
+      params.delete("page"); // optional but recommended (reset pagination)
+
+      navigate(`/?${params.toString()}`, { replace: true });
+      setIsOpen(false)
+    }, 500); // debounce delay
+
+    return () => {
+      if (searchTimeout.current) {
+        clearTimeout(searchTimeout.current);
+      }
+    };
+  }, [search]);
+
   const isLoginPage = location.pathname === "/login";
   const isSignupPage = location.pathname === "/signup";
 
@@ -82,8 +132,7 @@ const Header = () => {
   );
 
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, user } = useAppSelector((state) => state?.auth);
 
   const firstLetter = user?.name?.charAt(0).toUpperCase();
 
@@ -146,40 +195,36 @@ const Header = () => {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-300 shadow-sm py-1">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
 
           {/* Logo */}
-          <Link
-            to="/"
-            className="text-2xl font-extrabold tracking-tight text-indigo-600"
-          >
-            Apna<span className="text-gray-900">Mart</span>
-          </Link>
+          <Logo text="text-2xl" />
 
           {/* Search */}
           <div className="hidden md:block w-96">
-            <input
-              type="text"
-              placeholder="Search products..."
+            <CustomizedInputBase
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && search.trim()) {
-                  navigate(`/?search=${search}`);
-                }
-              }}
-              className="w-full rounded-full border bg-white px-5 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              onChange={setSearch}
             />
           </div>
-          <button
-            onClick={() => setShowFilter((prev) => !prev)}
-            className="hidden md:flex items-center gap-2 px-4 py-2 border rounded-full text-sm hover:bg-gray-100"
-          >
-            Filters
-            <ChevronDown size={16} />
-          </button>
+
+          <div className="hidden md:block">
+            <Button
+              variant="outlined"
+              onClick={() => setShowFilter((prev) => !prev)}
+              sx={{
+                borderRadius: "9999px",
+                "&:hover": {
+                  backgroundColor: "primary.main",
+                  color: "#fff",
+                  borderColor: "primary.main",
+                },
+              }}>
+              Filters {!showFilter ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            </Button>
+          </div>
 
           {/* Right Section */}
           <div className="flex items-center gap-4">
@@ -193,13 +238,18 @@ const Header = () => {
                     : "hover:bg-gray-100"
                   }`}
               >
-                <Heart
-                  className={
-                    user?.wishlist?.length
-                      ? "fill-red-500 text-red-500"
-                      : "text-gray-600"
-                  }
-                />
+
+                {user?.wishlist?.length ? (
+                  <FavoriteIcon sx={{ color: "red" }} />
+                ) : (
+                  <FavoriteBorderIcon sx={{ color: "grey" }} />
+                )}
+
+                {user?.wishlist?.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {user?.wishlist?.length}
+                  </span>
+                )}
               </Link>
             )}
 
@@ -213,10 +263,10 @@ const Header = () => {
                     : "hover:bg-gray-100"
                   }`}
               >
-                <ShoppingCart className="text-gray-700" />
+                <ShoppingCartIcon sx={{ color: "grey" }} />
                 {user?.cart?.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                    {user.cart.length}
+                    {user?.cart?.length}
                   </span>
                 )}
               </Link>
@@ -225,50 +275,54 @@ const Header = () => {
             {/* Auth */}
             {!isAuthenticated ? (
               <div className="hidden md:flex gap-3">
-                <Link
+                <Button
+                  component={Link}
                   to="/login"
-                  className={`px-5 py-2 rounded-full text-sm font-medium transition
-                   ${isLoginPage
-                      ? "bg-indigo-600 text-white hover:opacity-90"
-                      : "border border-indigo-600 text-indigo-600"
-                    }
-                 `}
-                >
+                  variant={isLoginPage ? "contained" : "outlined"} >
                   Login
-                </Link>
+                </Button>
 
-                <Link
+                <Button
+                  component={Link}
                   to="/signup"
-                  className={`px-5 py-2 rounded-full text-sm font-medium transition
-                    ${isSignupPage
-                      ? "bg-indigo-600 text-white hover:opacity-90"
-                      : "border border-indigo-600 text-indigo-600"
-                    }
-                   `}
-                >
+                  variant={isSignupPage ? "contained" : "outlined"} >
                   Sign Up
-                </Link>
+                </Button>
               </div>
             ) : (
-              <div className="relative">
-                {/* Avatar Button */}
-                <button
+              <div className="relative hidden md:block">
+                <div
                   onClick={() => setShowMenu((prev) => !prev)}
-                  className="flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1 hover:bg-gray-200 transition"
+                  className="flex items-center gap-2 cursor-pointer bg-gray-200 p-1 rounded-full"
                 >
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold shadow">
+                  <Avatar
+                    sx={{
+                      bgcolor: deepOrange[500],
+                      width: 36,
+                      height: 36,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      background: "linear-gradient(to bottom right, #4f46e5, #9333ea)",
+                      transition: "background-color 0.2s ease",
+                      "&:hover": {
+                        bgcolor: deepOrange[600],
+                      },
+                    }}
+                    alt="User avatar"
+                    src={user?.avatar || ""}
+                  >
                     {firstLetter}
-                  </div>
-                  <ChevronDown size={16} />
-                </button>
+                  </Avatar>
 
+                  {!showMenu ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                </div>
                 {/* Dropdown Menu */}
                 {showMenu && (
                   <div
                     ref={menuRef}
-                    className="absolute right-0 mt-3 w-56 rounded-xl bg-white shadow-xl border overflow-hidden animate-in fade-in slide-in-from-top-2"
+                    className="absolute right-0 mt-1 w-56 rounded-xl bg-white shadow-xl border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-top-2"
                   >
-                    <div className="px-4 py-3 border-b">
+                    <div className="px-4 py-3 border-b border-gray-300">
                       <p className="text-xs text-gray-500">Signed in as</p>
                       <p className="font-semibold text-gray-900 truncate">
                         {user?.name}
@@ -280,7 +334,7 @@ const Header = () => {
                       onClick={() => setShowMenu(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                     >
-                      <User size={16} /> Profile
+                      <PersonOutlineIcon /> Profile
                     </NavLink>
 
                     <NavLink
@@ -288,7 +342,7 @@ const Header = () => {
                       onClick={() => setShowMenu(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                     >
-                      <User size={16} /> Update Profile
+                      <PersonOutlineIcon /> Update Profile
                     </NavLink>
 
                     <NavLink
@@ -296,54 +350,54 @@ const Header = () => {
                       onClick={() => setShowMenu(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                     >
-                      <Lock size={16} /> Change Password
+                      <LockOpenIcon /> Change Password
                     </NavLink>
 
-                    {user.role !== "admin" && <NavLink
+                    {user?.role !== "admin" && <NavLink
                       to="/orders"
                       onClick={() => setShowMenu(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                     >
-                      My Orders
+                      <ShoppingCartIcon /> My Orders
                     </NavLink>
                     }
 
-                    {user.role !== "admin" && !application && (
+                    {user?.role !== "admin" && !application && (
                       <NavLink
                         to="/become-provider"
                         onClick={() => setShowMenu(false)}
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                       >
-                        Apply for Service Provider
+                        <ArrowForwardIcon /> Apply for Seller
                       </NavLink>
                     )}
 
-                    {user.role != "admin" && application && (
+                    {user?.role !== "admin" && application && (
                       <NavLink
                         to="/provider"
                         onClick={() => setShowMenu(false)}
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                       >
-                        Service Provider Status
+                        <CallToActionIcon /> Seller Status
                       </NavLink>
                     )}
 
-                    {application?.status === "Approved" && user.role !== "admin" && (
+                    {application?.status === "Approved" && user?.role !== "admin" && (
                       <NavLink
                         to="/service-provider/dashboard"
                         onClick={() => setShowMenu(false)}
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                       >
-                        Service Provider DashBoard
+                        <RecentActorsIcon /> Seller DashBoard
                       </NavLink>
                     )}
 
-                    {user.role === "admin" && <NavLink
+                    {user?.role === "admin" && <NavLink
                       to="/admin"
                       onClick={() => setShowMenu(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                     >
-                      Admin Dashboard
+                      <HowToRegIcon /> Admin Dashboard
                     </NavLink>}
 
                     <button
@@ -353,7 +407,7 @@ const Header = () => {
                       }}
                       className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
-                      <LogOut size={16} /> Logout
+                      <LogoutIcon sx={{ color: "red" }} /> Logout
                     </button>
                   </div>
                 )}
@@ -361,128 +415,194 @@ const Header = () => {
             )}
 
             {/* Mobile Menu Toggle */}
-            <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
-              {isOpen ? <X /> : <Menu />}
+            <button className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors" onClick={() => setIsOpen(!isOpen)}>
+              {isOpen ? <ClearIcon /> : <MenuIcon />}
             </button>
           </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden border-t bg-white px-4 py-4 space-y-3">
-          {!isAuthenticated ? (
-            <>
-              <NavLink
-                to="/login"
-                onClick={() => setIsOpen(false)}
-                className="block text-center rounded-lg py-2 bg-indigo-600 text-white"
-              >
-                Login
-              </NavLink>
-              <NavLink
-                to="/signup"
-                onClick={() => setIsOpen(false)}
-                className="block text-center rounded-lg py-2 border border-indigo-600 text-indigo-600"
-              >
-                Sign Up
-              </NavLink>
-            </>
-          ) : (
-            <>
-              <NavLink
-                to="/profile"
-                onClick={() => setIsOpen(false)}
-                className="block px-3 py-2 rounded-lg hover:bg-gray-100"
-              >
-                Profile
-              </NavLink>
+      {
+        isOpen && (
+          <div className="md:hidden border-t bg-white px-4 py-6 space-y-4 shadow-inner animate-in slide-in-from-top duration-300">
+            {/* Mobile Search */}
+            <div className="w-full">
+              <CustomizedInputBase
+                value={search}
+                onChange={setSearch}
+              />
+            </div>
 
-              <NavLink
-                to="/update-profile"
-                onClick={() => setIsOpen(false)}
-                className="block px-3 py-2 rounded-lg hover:bg-gray-100"
-              >
-                Update Profile
-              </NavLink>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => {
+                setShowFilter((prev) => !prev);
+              }}
+              sx={{
+                borderRadius: "9999px",
+                justifyContent: "space-between",
+                px: 3,
+                "&:hover": {
+                  backgroundColor: "primary.main",
+                  color: "#fff",
+                  borderColor: "primary.main",
+                },
+              }}>
+              Filters {!showFilter ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            </Button>
 
-              <NavLink
-                to="/change-password"
-                onClick={() => setIsOpen(false)}
-                className="block px-3 py-2 rounded-lg hover:bg-gray-100"
-              >
-                Change Password
-              </NavLink>
-
-              {user?.role === "user" && !application && (
-                <NavLink
-                  to="/become-provider"
+            {/* Mobile Links Below */}
+            {!isAuthenticated ? (
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <Button
+                  component={Link}
+                  to="/login"
+                  variant={isLoginPage ? "contained" : "outlined"}
+                  fullWidth
                   onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-lg hover:bg-gray-100"
                 >
-                  Apply for Service Provider
-                </NavLink>
-              )}
+                  Login
+                </Button>
 
-              {application && (
-                <NavLink
-                  to="/provider"
+                <Button
+                  component={Link}
+                  to="/signup"
+                  variant={isSignupPage ? "contained" : "outlined"}
+                  fullWidth
                   onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-lg hover:bg-gray-100"
                 >
-                  Service Provider Status
-                </NavLink>
-              )}
-
-              {application.status === "Approved" && (
-                <NavLink
-                  to="/service-provider/dashboard"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-lg hover:bg-gray-100"
+                  Sign Up
+                </Button>
+              </div>
+            ) : (
+              <div className="pt-2">
+                <div
+                  className="rounded-xl bg-gray-50 border border-gray-200 overflow-hidden"
                 >
-                  Service Provider Dashboard
-                </NavLink>
-              )}
+                  <div className="px-4 py-3 border-b border-gray-200 bg-white">
+                    <p className="text-xs text-gray-500">Signed in as</p>
+                    <p className="font-semibold text-gray-900 truncate">
+                      {user?.name}
+                    </p>
+                  </div>
 
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  handleLogout();
-                }}
-                className="w-full text-left px-3 py-2 text-red-600"
-              >
-                Logout
-              </button>
-            </>
-          )}
-        </div>
-      )}
-      {showFilter && (
-        <ProductFilter
-          category={category}
-          minPrice={minPrice}
-          maxPrice={maxPrice}
-          categoryOptions={categoryOptions}
-          onChange={(k, v) =>
-            k === "category"
-              ? setCategory(v)
-              : k === "minPrice"
-              ? setMinPrice(v)
-              : setMaxPrice(v)
-          }
-          onApply={() => {
-            applySearchAndFilter();
-            setShowFilter(false);
-          }}
-          onClear={() => {
-            setCategory("");
-            setMinPrice("");
-            setMaxPrice("");
-          }}
-          onClose={() => setShowFilter(false)}
-        />
-      )}
-    </header>
+                  <div className="py-2">
+                    <NavLink
+                      to="/profile"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-white transition-colors"
+                    >
+                      <PersonOutlineIcon fontSize="small" /> Profile
+                    </NavLink>
+
+                    <NavLink
+                      to="/update-profile"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-white transition-colors"
+                    >
+                      <PersonOutlineIcon fontSize="small" /> Update Profile
+                    </NavLink>
+
+                    <NavLink
+                      to="/change-password"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-white transition-colors"
+                    >
+                      <LockOpenIcon fontSize="small" /> Change Password
+                    </NavLink>
+
+                    {user?.role !== "admin" && (
+                      <NavLink
+                        to="/orders"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-white transition-colors"
+                      >
+                        <ShoppingCartIcon fontSize="small" /> My Orders
+                      </NavLink>
+                    )}
+
+                    {user?.role !== "admin" && !application && (
+                      <NavLink
+                        to="/become-provider"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-white transition-colors"
+                      >
+                        <ArrowForwardIcon fontSize="small" /> Apply for Seller
+                      </NavLink>
+                    )}
+
+                    {user?.role !== "admin" && application && (
+                      <NavLink
+                        to="/provider"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-white transition-colors"
+                      >
+                        <CallToActionIcon fontSize="small" /> Seller Status
+                      </NavLink>
+                    )}
+
+                    {application?.status === "Approved" && user?.role !== "admin" && (
+                      <NavLink
+                        to="/service-provider/dashboard"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-white transition-colors"
+                      >
+                        <RecentActorsIcon fontSize="small" /> Seller DashBoard
+                      </NavLink>
+                    )}
+
+                    {user?.role === "admin" && (
+                      <NavLink
+                        to="/admin"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-white transition-colors"
+                      >
+                        <HowToRegIcon fontSize="small" /> Admin Dashboard
+                      </NavLink>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        handleLogout();
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors mt-2 border-t border-gray-100"
+                    >
+                      <LogoutIcon fontSize="small" /> Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      }
+      {
+        showFilter && (
+          <ProductFilter
+            category={category}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            categoryOptions={categoryOptions}
+            onChange={(k, v) =>
+              k === "category"
+                ? setCategory(v)
+                : k === "minPrice"
+                  ? setMinPrice(v)
+                  : setMaxPrice(v)
+            }
+            onApply={() => {
+              applySearchAndFilter();
+              setShowFilter(false);
+            }}
+            onClear={clearFilters}
+            onClose={() => setShowFilter(false)}
+          />
+        )
+      }
+    </header >
   );
 };
 

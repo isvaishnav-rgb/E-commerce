@@ -43,18 +43,18 @@ const ProviderApplications = () => {
   return (
     <div>
       {/* Page Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-800">
           Provider Applications
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
           Total: {applications?.length || 0}
         </p>
       </div>
 
       {/* Empty State */}
       {!applications || applications.length === 0 ? (
-        <div className="text-center py-20 text-gray-500">
+        <div className="text-center py-20 text-gray-500 bg-white border rounded-xl">
           No provider applications found
         </div>
       ) : (
@@ -62,71 +62,77 @@ const ProviderApplications = () => {
           {applications.map((app: any) => (
             <div
               key={app._id}
-              className="bg-white border rounded-xl p-5 shadow-sm hover:shadow transition"
+              className="bg-white border rounded-xl p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow"
             >
               {/* Header */}
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="font-semibold text-lg text-gray-800">
+              <div className="flex justify-between items-start mb-4 gap-2">
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base md:text-lg text-gray-800 truncate">
                     {app.user?.name}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs md:text-sm text-gray-500 truncate">
                     {app.user?.email}
                   </p>
                 </div>
 
                 <span
-                  className={`px-3 py-1 text-xs font-medium rounded-full ${statusStyles[app.status]}`}
+                  className={`shrink-0 px-2.5 py-0.5 text-[10px] md:text-xs font-semibold rounded-full uppercase tracking-wider ${statusStyles[app.status]}`}
                 >
                   {app.status}
                 </span>
               </div>
 
               {/* Details */}
-              <div className="grid sm:grid-cols-2 gap-3 text-sm text-gray-700">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs md:text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
                 <p>
-                  <strong>Business:</strong> {app.businessName}
+                  <strong className="text-gray-900">Business:</strong> {app.businessName}
                 </p>
                 <p>
-                  <strong>Applied On:</strong>{" "}
+                  <strong className="text-gray-900">Applied On:</strong>{" "}
                   {new Date(app.appliedAt).toLocaleDateString()}
                 </p>
                 {app.adminRemark && (
-                  <p className="sm:col-span-2">
-                    <strong>Admin Remark:</strong> {app.adminRemark}
+                  <p className="sm:col-span-2 italic text-gray-600">
+                    <strong className="text-gray-900 not-italic">Admin Remark:</strong> {app.adminRemark}
                   </p>
                 )}
               </div>
 
               {/* Documents */}
               {app.kycDocuments?.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                <div className="mt-5">
+                  <h4 className="text-sm font-bold text-gray-800 mb-3 border-b pb-1">
                     Documents
                   </h4>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {app.kycDocuments.map((doc: any, index: number) => (
                       <div
                         key={index}
-                        className="border rounded-lg p-2 bg-gray-50 hover:shadow transition"
+                        className="border rounded-lg p-2 bg-white shadow-sm hover:border-blue-200 transition-colors"
                       >
-                        <p className="text-xs font-medium text-gray-600 mb-1">
-                          {doc.type}
-                        </p>
+                        <div className="flex justify-between items-center mb-2">
+                          <p className="text-xs font-bold text-gray-700">
+                            {doc.type}
+                          </p>
+                          <p className="text-[10px] text-gray-400">
+                            ID: {doc.documentNumber}
+                          </p>
+                        </div>
 
-                        <img
-                          src={doc.documentImage}
-                          alt={doc.type}
-                          className="w-full h-32 object-contain rounded cursor-pointer hover:scale-105 transition"
-                          onClick={() =>
-                            window.open(doc.documentImage, "_blank")
-                          }
-                        />
-
-                        <p className="text-[11px] text-gray-400 mt-1">
-                          ID: {doc.documentNumber}
-                        </p>
+                        <div className="relative group overflow-hidden rounded-md bg-gray-100">
+                          <img
+                            src={doc.documentImage}
+                            alt={doc.type}
+                            className="w-full h-32 md:h-40 object-contain rounded transition transform group-hover:scale-110 cursor-pointer"
+                            onClick={() =>
+                              window.open(doc.documentImage, "_blank")
+                            }
+                          />
+                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center pointer-events-none">
+                            <span className="text-white text-xs font-medium">View Full Image</span>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -135,21 +141,21 @@ const ProviderApplications = () => {
 
               {/* Actions */}
               {app.status === "Pending" && (
-                <div className="flex gap-3 mt-5">
+                <div className="flex flex-col sm:flex-row gap-2 mt-6">
                   <button
                     onClick={() => handleApprove(app._id)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition cursor-pointer font-bold text-sm"
                   >
                     <CheckCircle size={18} />
-                    Approve
+                    Approve Application
                   </button>
 
                   <button
                     onClick={() => handleReject(app._id)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition cursor-pointer font-bold text-sm"
                   >
                     <XCircle size={18} />
-                    Reject
+                    Reject Application
                   </button>
                 </div>
               )}

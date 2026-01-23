@@ -4,6 +4,7 @@ import { toggleCart } from "../../features/product/productSlice";
 import { useState, useMemo } from "react";
 import { placeOrderApi } from "../../api/order.api";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 /* =====================
    ADDRESS INTERFACE
@@ -69,7 +70,7 @@ const CheckoutPage = () => {
     (sum: number, item: any) =>
       sum +
       (item.product.price - item.product.finalPrice) *
-        item.quantity,
+      item.quantity,
     0
   );
 
@@ -93,40 +94,40 @@ const CheckoutPage = () => {
      PLACE ORDER
   ===================== */
   const handlePlaceOrder = async () => {
-  const finalPhone = user?.phone || phone;
-  const finalAddress = user?.address || address;
+    const finalPhone = user?.phone || phone;
+    const finalAddress = user?.address || address;
 
-  if (
-    !finalPhone ||
-    !finalAddress.street ||
-    !finalAddress.city ||
-    !finalAddress.state ||
-    !finalAddress.country ||
-    !finalAddress.pincode
-  ) {
-    alert("Please fill all address fields");
-    return;
-  }
+    if (
+      !finalPhone ||
+      !finalAddress.street ||
+      !finalAddress.city ||
+      !finalAddress.state ||
+      !finalAddress.country ||
+      !finalAddress.pincode
+    ) {
+      alert("Please fill all address fields");
+      return;
+    }
 
-  try {
-   const res = await placeOrderApi({
-      phone: finalPhone,
-      address: finalAddress,
-      items: cartItems.map((item: any) => ({
-        product: item.product._id,
-        quantity: item.quantity,
-      })),
-    });
+    try {
+      const res = await placeOrderApi({
+        phone: finalPhone,
+        address: finalAddress,
+        items: cartItems.map((item: any) => ({
+          product: item.product._id,
+          quantity: item.quantity,
+        })),
+      });
 
-    alert("Order placed successfully ✅");
-    navigate(`/payment/${res?.data?.orderId}`)
-  } catch (err: any) {
-    alert(
-      err?.response?.data?.message ||
+      alert("Order placed successfully ✅");
+      navigate(`/payment/${res?.data?.orderId}`)
+    } catch (err: any) {
+      alert(
+        err?.response?.data?.message ||
         "Failed to place order"
-    );
-  }
-};
+      );
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -168,7 +169,7 @@ const CheckoutPage = () => {
                     )
                   }
                   disabled={item.quantity <= 1}
-                  className="p-1 border rounded"
+                  className={`p-1 border rounded ${item.quantity <= 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                 >
                   <Minus size={16} />
                 </button>
@@ -184,24 +185,29 @@ const CheckoutPage = () => {
                       })
                     )
                   }
-                  className="p-1 border rounded"
+                  className="p-1 border rounded cursor-pointer"
                 >
                   <Plus size={16} />
                 </button>
 
                 <button
-                  onClick={() =>
+                  onClick={() => {
                     dispatch(
                       toggleCart({
                         productId: item.product._id,
                         quantity: 0,
                       })
-                    )
-                  }
-                  className="ml-4 text-red-500"
+                    );
+
+                    toast.error(
+                      `${item.product.name} removed from cart`,
+                    );
+                  }}
+                  className="ml-4 text-red-500 cursor-pointer"
                 >
                   <Trash2 size={18} />
                 </button>
+
               </div>
             </div>
 

@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useAppDispatch } from "../../app/hooks";
 import { forgotPasswordThunk } from "../../features/auth/authThunks";
 
+import { TextField, Button, Alert, Box, Typography } from "@mui/material";
+
 /* -----------------------
    ZOD SCHEMA
 ------------------------ */
@@ -52,49 +54,71 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-bold mb-2">Forgot Password</h2>
-        <p className="text-gray-500 mb-4">
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        bgcolor: "#f9fafb", // gray-50
+        p: 2,
+      }}
+    >
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 400,
+          bgcolor: "white",
+          p: 4,
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
+      >
+        <Typography variant="h5" fontWeight={600} mb={1}>
+          Forgot Password
+        </Typography>
+        <Typography variant="body2" color="textSecondary" mb={3}>
           Enter your registered email address
-        </p>
+        </Typography>
 
+        {/* SUCCESS ALERT */}
         {success && (
-          <div className="bg-green-100 text-green-700 p-2 rounded mb-3">
+          <Alert severity="success" sx={{ mb: 2 }}>
             {success}
-          </div>
+          </Alert>
         )}
 
+        {/* ERROR ALERT */}
         {error && (
-          <div className="bg-red-100 text-red-600 p-2 rounded mb-3">
+          <Alert severity="error" sx={{ mb: 2 }}>
             {error}
-          </div>
+          </Alert>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <input
-              type="email"
-              placeholder="Email address"
-              {...register("email")}
-              className="w-full border p-2 rounded focus:ring"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <TextField
+            label="Email Address"
+            type="email"
+            fullWidth
+            margin="normal"
+            {...register("email")}
+            error={!!errors.email}
+            helperText={errors.email?.message?.toString() || " "}
+          />
 
-          <button
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2 }}
             disabled={loading}
-            className="w-full bg-black text-white py-2 rounded hover:bg-gray-800"
           >
             {loading ? "Sending..." : "Send Reset Link"}
-          </button>
+          </Button>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

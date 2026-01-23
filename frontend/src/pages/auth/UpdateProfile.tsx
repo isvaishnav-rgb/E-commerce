@@ -1,5 +1,6 @@
+// src/pages/profile/UpdateProfile.tsx
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateProfileSchema } from "../../schemas/updateProfile.schema";
 import { updateProfileApi } from "../../api/auth.api";
@@ -7,6 +8,16 @@ import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../features/auth/authSlice";
 import type { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Stack,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  Container,
+  Alert,
+} from "@mui/material";
 
 type UpdateProfileForm = {
   name?: string;
@@ -29,33 +40,34 @@ export default function UpdateProfile() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<UpdateProfileForm>({
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<UpdateProfileForm>({
     resolver: zodResolver(updateProfileSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      address: {
+        street: "",
+        city: "",
+        state: "",
+        country: "",
+        pincode: "",
+      },
+    },
   });
 
-  /**
-   * ✅ IMPORTANT
-   * Sync Redux user → form values
-   */
   useEffect(() => {
-    if (user) {
-      reset({
-        name: user.name || "",
-        phone: user.phone || "",
-        address: {
-          street: user.address?.street || "",
-          city: user.address?.city || "",
-          state: user.address?.state || "",
-          country: user.address?.country || "",
-          pincode: user.address?.pincode || "",
-        },
-      });
-    }
+    if (!user) return;
+    reset({
+      name: user.name || "",
+      phone: user.phone || "",
+      address: {
+        street: user.address?.street || "",
+        city: user.address?.city || "",
+        state: user.address?.state || "",
+        country: user.address?.country || "",
+        pincode: user.address?.pincode || "",
+      },
+    });
   }, [user, reset]);
 
   const onSubmit = async (data: UpdateProfileForm) => {
@@ -65,13 +77,10 @@ export default function UpdateProfile() {
       setSuccess(null);
 
       const res = await updateProfileApi(data);
-
       dispatch(setUser(res.data.user));
       setSuccess("✅ Profile updated successfully!");
 
-      setTimeout(()=>{
-        navigate("/")
-      }, 3000)
+      setTimeout(() => navigate("/"), 2000);
     } catch (err) {
       const e = err as AxiosError<any>;
       setError(e.response?.data?.message || "Update failed");
@@ -81,108 +90,151 @@ export default function UpdateProfile() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-lg bg-white p-8 rounded-xl shadow-lg"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          Update Profile ✨
-        </h2>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        py: 8,
+        bgcolor: "#f3f4f6",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <Container maxWidth="sm">
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+          <Typography variant="h4" fontWeight={700} textAlign="center" mb={3}>
+            Update Profile ✨
+          </Typography>
 
-        {/* SUCCESS */}
-        {success && (
-          <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-md text-sm text-center">
-            {success}
-          </div>
-        )}
+          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-        {/* ERROR */}
-        {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-md text-sm text-center">
-            {error}
-          </div>
-        )}
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack spacing={2}>
+              {/* Name */}
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Name"
+                    fullWidth
+                    size="small"
+                    error={!!errors.name}
+                    helperText={errors.name?.message}
+                  />
+                )}
+              />
 
-        {/* NAME */}
-        <div className="mb-4">
-          <label className="text-sm font-medium">Name</label>
-          <input
-            {...register("name")}
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
-          {errors.name && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.name.message}
-            </p>
-          )}
-        </div>
+              {/* Phone */}
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Phone"
+                    fullWidth
+                    size="small"
+                    error={!!errors.phone}
+                    helperText={errors.phone?.message}
+                  />
+                )}
+              />
 
-        {/* PHONE */}
-        <div className="mb-4">
-          <label className="text-sm font-medium">Phone</label>
-          <input
-            {...register("phone")}
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
-          {errors.phone && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.phone.message}
-            </p>
-          )}
-        </div>
+              {/* Address */}
+              <Typography variant="subtitle1" fontWeight={600}>
+                Address
+              </Typography>
+              <Controller
+                name="address.street"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Street"
+                    fullWidth
+                    size="small"
+                    error={!!errors.address?.street}
+                    helperText={errors.address?.street?.message}
+                  />
+                )}
+              />
+              <Stack direction="row" spacing={2}>
+                <Controller
+                  name="address.city"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="City"
+                      fullWidth
+                      size="small"
+                      error={!!errors.address?.city}
+                      helperText={errors.address?.city?.message}
+                    />
+                  )}
+                />
+                <Controller
+                  name="address.state"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="State"
+                      fullWidth
+                      size="small"
+                      error={!!errors.address?.state}
+                      helperText={errors.address?.state?.message}
+                    />
+                  )}
+                />
+              </Stack>
+              <Stack direction="row" spacing={2}>
+                <Controller
+                  name="address.country"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Country"
+                      fullWidth
+                      size="small"
+                      error={!!errors.address?.country}
+                      helperText={errors.address?.country?.message}
+                    />
+                  )}
+                />
+                <Controller
+                  name="address.pincode"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Pincode"
+                      fullWidth
+                      size="small"
+                      error={!!errors.address?.pincode}
+                      helperText={errors.address?.pincode?.message}
+                    />
+                  )}
+                />
+              </Stack>
 
-        {/* ADDRESS */}
-        <h3 className="text-sm font-semibold mb-2 mt-6">Address</h3>
-
-        <div className="mb-3">
-          <input
-            {...register("address.street")}
-            placeholder="Street"
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-
-        <div className="mb-3">
-          <input
-            {...register("address.city")}
-            placeholder="City"
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-
-        <div className="mb-3">
-          <input
-            {...register("address.state")}
-            placeholder="State"
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-
-        <div className="mb-3">
-          <input
-            {...register("address.country")}
-            placeholder="Country"
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-
-        <div className="mb-6">
-          <input
-            {...register("address.pincode")}
-            placeholder="Pincode"
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          />
-        </div>
-
-        {/* BUTTON */}
-        <button
-          disabled={loading}
-          className="w-full bg-indigo-600 text-white py-2 rounded-md font-medium hover:bg-indigo-700 transition disabled:opacity-60"
-        >
-          {loading ? "Updating..." : "Update Profile"}
-        </button>
-      </form>
-    </div>
+              {/* Submit */}
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                size="large"
+                disabled={loading}
+              >
+                {loading ? "Updating..." : "Update Profile"}
+              </Button>
+            </Stack>
+          </form>
+        </Paper>
+      </Container>
+    </Box>
   );
 }

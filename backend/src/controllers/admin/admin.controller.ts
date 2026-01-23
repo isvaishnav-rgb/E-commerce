@@ -460,17 +460,58 @@ const getAllOrders = async (req: Request, res:  Response) => {
 /* ===============================
    UPDATE ORDER STATUS (ADMIN)
 =============================== */
-const updateOrderStatus = async (req: Request, res:  Response) => {
+
+export const updateOrderStatus = async (req: Request, res: Response) => {
   try {
     const { status } = req.body;
     const orderId = req.params.id;
-    if (!['Pending', 'Confirmed', 'Cancelled', 'Shipped', 'Delivered', 'Returned'].includes(status)) {
+
+    const allowedStatuses = [
+      "Pending",
+      "Confirmed",
+      "Cancelled",
+      "Shipped",
+      "Delivered",
+      "Returned",
+    ];
+
+    if (!allowedStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid order status" });
     }
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId).populate("items.product");
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
+    }
+
+    // ⚠️ Prevent double stock deduction
+    if (order.status === "Delivered") {
+      return res.status(400).json({
+        message: "Order already delivered",
+      });
+    }
+
+    // ✅ Deduct stock ONLY when delivered
+    if (status === "Delivered") {
+      for (const item of order.items) {
+        const product = await Product.findById(item.product);
+
+        if (!product) {
+          return res.status(404).json({
+            message: "Product not found",
+          });
+        }
+
+        // ❌ Not enough stock
+        if (product.stock < item.quantity) {
+          return res.status(400).json({
+            message: `Not enough stock for ${product.name}`,
+          });
+        }
+
+        product.stock -= item.quantity;
+        await product.save();
+      }
     }
 
     order.status = status;
@@ -478,15 +519,16 @@ const updateOrderStatus = async (req: Request, res:  Response) => {
 
     res.json({
       message: "Order status updated successfully",
-      order
+      order,
     });
   } catch (err: any) {
     res.status(500).json({
       message: "Failed to update order status",
-      error: err.message
+      error: err.message,
     });
   }
 };
+
 
 
 module.exports = {

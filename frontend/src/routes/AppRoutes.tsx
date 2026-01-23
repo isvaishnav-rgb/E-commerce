@@ -32,6 +32,14 @@ import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 import ProductDetailsPage from "../pages/landingPage/ProductDetails";
 
+//Miscellanous Pages
+import AboutUs from "../pages/miscellaneousPages/AboutUs";
+import ContactUs from "../pages/miscellaneousPages/ContactUs";
+import FAQs from "../pages/miscellaneousPages/FAQS";
+import Returns from "../pages/miscellaneousPages/Returns";
+import PrivacyPolicy from "../pages/miscellaneousPages/PrivacyPolicy";
+import TermsAndConditions from "../pages/miscellaneousPages/TermsAndCondition";
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -41,8 +49,16 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/verify" element={<OtpVerification />} />
-      <Route path="/forgot-password" element={<ForgotPassword/>} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+      {/* Miscellanous Pages */}
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/contact" element={<ContactUs />} />
+      <Route path="/faqs" element={<FAQs />} />
+      <Route path="/returns" element={<Returns />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsAndConditions />} />
 
       {/* ================= USER ROUTES ================= */}
       <Route element={<ProtectedRoute />}>
@@ -70,6 +86,7 @@ const AppRoutes = () => {
       {/* ================= ADMIN ROUTES ================= */}
       <Route element={<RoleRoute allowedRoles={["admin"]} />}>
         <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<ProviderApplications />} />
           <Route path="providers" element={<ProviderApplications />} />
           <Route path="users" element={<Users />} />
           <Route path="products" element={<Products />} />

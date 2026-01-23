@@ -8,10 +8,15 @@ export const signupSchema = z.object({
     .min(3, "Name must be at least 3 characters")
     .max(50, "Name cannot exceed 50 characters"),
 
+
   email: z
     .string()
     .trim()
-    .email("Invalid email address"),
+    .email("Invalid email address")
+    .regex(
+      /^[^\s@]+@[^\s@]+\.(com|in|edu)$/,
+      "Email must end with .com, .in, or .edu"
+    ),
 
   phone: z
     .string()

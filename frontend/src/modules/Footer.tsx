@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
 import { QUICK_LINKS, SUPPORT_LINKS, SOCIAL_LINKS } from "./Footer.data";
+import Logo from "../components/Logo";
 const Footer = () => {
+  const handleClick = () => {
+      window.scrollTo({top: 0, behavior: "smooth"})
+  }
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-gray-200 text-grey-300">
       <div className="max-w-7xl mx-auto px-4 py-12">
 
         {/* Top Section */}
@@ -10,10 +14,8 @@ const Footer = () => {
 
           {/* Brand */}
           <div>
-            <h2 className="text-2xl font-bold text-white">
-              ApnaMart
-            </h2>
-            <p className="mt-3 text-sm text-gray-400">
+            <Logo text={"text-2xl"}/>
+            <p className="mt-3 text-sm text-gray-500">
               Your trusted multi-vendor e-commerce platform.
               Buy, sell, and manage products with ease.
             </p>
@@ -21,7 +23,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">
+            <h3 className="text-indigo-600 font-semibold mb-4">
               Quick Links
             </h3>
             <ul className="space-y-2 text-sm">
@@ -29,7 +31,8 @@ const Footer = () => {
                 <li key={label}>
                   <Link
                     to={path}
-                    className="hover:text-white transition"
+                    className="hover:text-indigo-400 transition"
+                    onClick={handleClick}
                   >
                     {label}
                   </Link>
@@ -40,7 +43,7 @@ const Footer = () => {
 
           {/* Customer Support */}
           <div>
-            <h3 className="text-white font-semibold mb-4">
+            <h3 className="text-indigo-600 font-semibold mb-4">
               Customer Support
             </h3>
             <ul className="space-y-2 text-sm">
@@ -48,7 +51,8 @@ const Footer = () => {
                 <li key={label}>
                   <Link
                     to={path}
-                    className="hover:text-white transition"
+                    className="hover:text-indigo-400 transition"
+                    onClick={handleClick}
                   >
                     {label}
                   </Link>
@@ -59,7 +63,7 @@ const Footer = () => {
 
           {/* Social Media */}
           <div>
-            <h3 className="text-white font-semibold mb-4">
+            <h3 className="text-indigo-600 font-semibold mb-4">
               Follow Us
             </h3>
             <div className="flex gap-4">
@@ -73,7 +77,7 @@ const Footer = () => {
                     aria-label="social link"
                   >
                     <Icon
-                      className={`w-5 h-5 text-gray-500 ${color} transition cursor-pointer`}
+                      className={`w-5 h-5 text-gray-800 ${color} transition cursor-pointer`}
                     />
                   </a>
                 )
@@ -84,7 +88,7 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className="border-t border-gray-800 mt-10 pt-6 text-center text-sm text-gray-500">
-          © {new Date().getFullYear()} ApnaMart. All rights reserved.
+          © {new Date().getFullYear()} <Logo text="text-sm"/>. All rights reserved.
         </div>
 
       </div>

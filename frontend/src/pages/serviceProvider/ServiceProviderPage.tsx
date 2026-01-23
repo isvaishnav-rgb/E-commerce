@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 
 const ServiceProviderPage = () => {
   const dispatch = useDispatch();
+
   const application = useSelector(
     (state: any) => state.provider.application
   );
@@ -16,20 +17,35 @@ const ServiceProviderPage = () => {
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchApplication = async () => {
       try {
         const res = await getMyServiceProviderApplicationApi();
-        dispatch(setApplication(res.data.application || null));
-      } catch {
-        dispatch(setApplication(null));
+
+        if (isMounted) {
+          dispatch(setApplication(res?.data?.application ?? null));
+        }
+      } catch (err) {
+        console.error("FETCH APPLICATION ERROR", err);
+        if (isMounted) {
+          dispatch(setApplication(null));
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchApplication();
+
+    return () => {
+      isMounted = false;
+    };
   }, [dispatch]);
 
+  /* ⏳ Loading */
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -38,18 +54,20 @@ const ServiceProviderPage = () => {
     );
   }
 
-  /* ❌ NOT APPLIED OR EDIT MODE */
+  /* 📝 No application OR editing */
   if (!application || editMode) {
     return (
       <ServiceProviderForm
-        editMode={!!application}
+        editMode={Boolean(application)}
         initialData={application}
-        onSuccess={() => setEditMode(false)}
+        onSuccess={() => {
+          setEditMode(false);
+        }}
       />
     );
   }
 
-  /* ✅ PENDING / APPROVED */
+  /* 📄 Application exists */
   return (
     <ApplicationDetails
       application={application}

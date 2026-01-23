@@ -120,69 +120,16 @@ export const getMyProducts = async (req: Request, res:  Response) => {
 
 export const getActiveProducts = async (req: Request, res: Response) => {
   try {
-    const {
-      search,
-      category,
-      minPrice,
-      maxPrice,
-      sort,
-      page = 1,
-      limit = 12
-    } = req.query;
-
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
-    const skip = (pageNum - 1) * limitNum;
-
-    /* ------------------------
-       BASE QUERY (IMPORTANT)
-    ------------------------- */
     const query: any = {
       status: "Active",
       isDeleted: false,
     };
-
-    /* 🔍 Search by product name */
-    if (search) {
-      query.name = { $regex: search, $options: "i" };
-    }
-
-    /* 🏷️ Filter by category */
-    if (category) {
-      query.category = category;
-    }
-
-    /* 💰 Filter by price range */
-    if (minPrice || maxPrice) {
-      query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
-    }
-
-    /* ⬇️ Sorting */
-    let sortOption: any = { createdAt: -1 };
-    if (sort === "price_asc") sortOption = { price: 1 };
-    if (sort === "price_desc") sortOption = { price: -1 };
-    if (sort === "latest") sortOption = { createdAt: -1 };
-
-    const totalProducts = await Product.countDocuments(query);
+   
     const products = await Product.find(query)
-      .sort(sortOption)
-      .skip(skip)
-      .limit(limitNum);
-
-    const totalPages = Math.ceil(totalProducts / limitNum);
 
     res.status(200).json({
       message: "Active products fetched successfully",
       products,
-      pagination: {
-        currentPage: pageNum,
-        totalPages,
-        totalProducts,
-        hasNextPage: pageNum < totalPages,
-        hasPrevPage: pageNum > 1
-      }
     });
   } catch (err: any) {
     res.status(500).json({

@@ -7,6 +7,7 @@ import { useSearchParams } from "react-router-dom";
 import Header from "./modules/Header";
 import Footer from "./modules/Footer";
 import AppRoutes from "./routes/AppRoutes";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -33,14 +34,7 @@ function App() {
 
   useEffect(() => {
     const fetchProducts = () => {
-      const params = {
-        search: searchParams.get("search"),
-        category: searchParams.get("category"),
-        minPrice: searchParams.get("minPrice"),
-        maxPrice: searchParams.get("maxPrice"),
-      };
-
-     dispatch(fetchActiveProducts(params))
+     dispatch(fetchActiveProducts())
     };
 
     fetchProducts();
@@ -48,6 +42,7 @@ function App() {
 
   return (
     <>
+     <Toaster position="top-right" reverseOrder={false}/>
       <Header />
       <AppRoutes />
       <Footer />

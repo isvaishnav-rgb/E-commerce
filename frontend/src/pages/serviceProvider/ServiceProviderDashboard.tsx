@@ -7,6 +7,7 @@ import {
 } from "../../api/product.api";
 import type { Product } from "../../types/Products";
 import ProductImageCarousel from "../../components/ProductImageCarousel";
+import { useNavigate } from "react-router-dom";
 
 const ServiceProviderDashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -14,6 +15,7 @@ const ServiceProviderDashboard = () => {
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [selectedProduct, setSelectedProduct] =
     useState<Product | null>(null);
+  const navigate = useNavigate();
 
   const fetchProducts = async () => {
     const data = await getMyProductsApi();
@@ -28,6 +30,11 @@ const ServiceProviderDashboard = () => {
     await deleteProductApi(id);
     fetchProducts();
   };
+
+  const handleNavigate=(productId: string)=> {
+    navigate(`/${productId}`)
+
+  }
 
   return (
     <div className="p-6">
@@ -52,7 +59,8 @@ const ServiceProviderDashboard = () => {
         {products.map((p) => (
           <div
             key={p._id}
-            className="rounded-xl bg-white p-4 shadow"
+            className="rounded-xl bg-white p-4 shadow cursor-pointer"
+            onClick={()=>handleNavigate(p._id)}
           >
             {/* Image Carousel */}
             <ProductImageCarousel images={p.images} />

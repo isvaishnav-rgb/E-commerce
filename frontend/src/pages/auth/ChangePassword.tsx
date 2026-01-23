@@ -7,12 +7,16 @@ import { useDispatch } from "react-redux";
 import { logout } from "../../features/auth/authSlice";
 import type { AxiosError } from "axios";
 
+import { TextField, Button, Alert, Box, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+
 export default function ChangePassword() {
   const dispatch = useDispatch();
 
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -31,11 +35,11 @@ export default function ChangePassword() {
       await changePasswordApi(data);
 
       setSuccess("✅ Password changed successfully. Please login again.");
-
       reset();
 
       setTimeout(() => {
         dispatch(logout());
+        navigate("/login")
       }, 2000);
     } catch (err) {
       const e = err as AxiosError<any>;
@@ -46,85 +50,90 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "#f3f4f6", // gray-100
+        p: 2,
+      }}
+    >
+      <Box
+        component="form"
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg"
+        sx={{
+          width: "100%",
+          maxWidth: 400,
+          bgcolor: "white",
+          p: 4,
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
       >
-        <h2 className="text-2xl font-bold mb-6 text-center">
+        <Typography variant="h5" fontWeight={600} textAlign="center" mb={3}>
           Change Password 🔐
-        </h2>
+        </Typography>
 
         {/* SUCCESS */}
         {success && (
-          <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700 text-center">
+          <Alert severity="success" sx={{ mb: 2, textAlign: "center" }}>
             {success}
-          </div>
+          </Alert>
         )}
 
         {/* ERROR */}
         {error && (
-          <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600 text-center">
+          <Alert severity="error" sx={{ mb: 2, textAlign: "center" }}>
             {error}
-          </div>
+          </Alert>
         )}
 
         {/* CURRENT PASSWORD */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">
-            Current Password
-          </label>
-          <input
-            {...register("currentPassword")}
-            type="password"
-            placeholder="••••••••"
-            className={`w-full rounded-md border px-3 py-2 text-sm focus:ring-2 ${
-              errors.currentPassword
-                ? "border-red-400 focus:ring-red-300"
-                : "border-gray-300 focus:ring-indigo-300"
-            }`}
-          />
-          {errors.currentPassword && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.currentPassword.message}
-            </p>
-          )}
-        </div>
+        <TextField
+          label="Current Password"
+          type="password"
+          fullWidth
+          margin="normal"
+          {...register("currentPassword")}
+          error={!!errors.currentPassword}
+          helperText={errors.currentPassword?.message?.toString() || " "}
+        />
 
         {/* NEW PASSWORD */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-1">
-            New Password
-          </label>
-          <input
-            {...register("newPassword")}
-            type="password"
-            placeholder="At least 8 characters"
-            className={`w-full rounded-md border px-3 py-2 text-sm focus:ring-2 ${
-              errors.newPassword
-                ? "border-red-400 focus:ring-red-300"
-                : "border-gray-300 focus:ring-indigo-300"
-            }`}
-          />
-          {errors.newPassword && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.newPassword.message}
-            </p>
-          )}
-        </div>
+        <TextField
+          label="New Password"
+          type="password"
+          fullWidth
+          margin="normal"
+          {...register("newPassword")}
+          error={!!errors.newPassword}
+          helperText={errors.newPassword?.message?.toString() || "At least 8 characters"}
+        />
 
-        {/* BUTTON */}
-        <button
+        {/* SUBMIT BUTTON */}
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          sx={{ mt: 2 }}
           disabled={loading}
-          className="w-full rounded-md bg-indigo-600 py-2 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-60"
         >
           {loading ? "Changing..." : "Change Password"}
-        </button>
+        </Button>
 
-        <p className="text-xs text-gray-500 text-center mt-4">
+        <Typography
+          variant="caption"
+          color="textSecondary"
+          display="block"
+          textAlign="center"
+          mt={2}
+        >
           You’ll be logged out after changing your password.
-        </p>
-      </form>
-    </div>
+        </Typography>
+      </Box>
+    </Box>
   );
 }

@@ -36,8 +36,8 @@ const initialState: ProductState = {
 
 export const fetchActiveProducts = createAsyncThunk(
   "products/fetchActive",
-  async (params: any) => {
-    return await getActiveProductsApi(params);
+  async () => {
+    return await getActiveProductsApi();
   }
 );
 

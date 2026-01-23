@@ -5,6 +5,16 @@ import { signupSchema } from "../../schemas/auth.schema";
 import { signupApi } from "../../api/auth.api";
 import { useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
+import {
+  Box,
+  Stack,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+  Paper,
+  Container,
+} from "@mui/material";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -29,159 +39,131 @@ export default function Signup() {
 
       await signupApi(data);
 
-      // ✅ Show success message
       setSuccessMessage("🎉 Signup successful! OTP sent to your email.");
 
-      // ⏳ Redirect after short delay
       setTimeout(() => {
-        navigate("/verify", {
-          state: { email: data.email },
-        });
+        navigate("/verify", { state: { email: data.email } });
       }, 2000);
     } catch (err) {
       const error = err as AxiosError<any>;
-      setServerError(
-        error.response?.data?.message || "Signup failed"
-      );
+      setServerError(error.response?.data?.message || "Signup failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg"
-      >
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          Create Account 🚀
-        </h2>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #eef2ff, #ffffff)",
+        p: 2,
+      }}
+    >
+      <Container maxWidth="sm">
+        <Paper elevation={4} sx={{ p: { xs: 3, sm: 5 }, borderRadius: 3 }}>
+          <Typography variant="h4" fontWeight={700} textAlign="center" mb={3}>
+            Create Account 🚀
+          </Typography>
 
-        {/* ✅ Success Message */}
-        {successMessage && (
-          <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700">
-            {successMessage}
-          </div>
-        )}
-
-        {/* 🔴 Backend Error */}
-        {serverError && (
-          <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600">
-            {serverError}
-          </div>
-        )}
-
-        {/* Name */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Name
-          </label>
-          <input
-            {...register("name")}
-            placeholder="John Doe"
-            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
-              errors.name
-                ? "border-red-400 focus:ring-red-300"
-                : "border-gray-300 focus:ring-indigo-300"
-            }`}
-          />
-          {errors.name && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.name.message}
-            </p>
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {successMessage}
+            </Alert>
           )}
-        </div>
 
-        {/* Email */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <input
-            {...register("email")}
-            type="email"
-            placeholder="you@example.com"
-            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
-              errors.email
-                ? "border-red-400 focus:ring-red-300"
-                : "border-gray-300 focus:ring-indigo-300"
-            }`}
-          />
-          {errors.email && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.email.message}
-            </p>
+          {serverError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {serverError}
+            </Alert>
           )}
-        </div>
 
-        {/* Phone */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Phone
-          </label>
-          <input
-            {...register("phone")}
-            placeholder="9876543210"
-            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
-              errors.phone
-                ? "border-red-400 focus:ring-red-300"
-                : "border-gray-300 focus:ring-indigo-300"
-            }`}
-          />
-          {errors.phone && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.phone.message}
-            </p>
-          )}
-        </div>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack spacing={3}>
+              {/* Name */}
+              <TextField
+                label="Name"
+                placeholder="John Doe"
+                fullWidth
+                {...register("name")}
+                error={!!errors.name}
+                helperText={errors.name?.message}
+              />
 
-        {/* Password */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <input
-            {...register("password")}
-            type="password"
-            placeholder="••••••••"
-            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
-              errors.password
-                ? "border-red-400 focus:ring-red-300"
-                : "border-gray-300 focus:ring-indigo-300"
-            }`}
-          />
-          {errors.password && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
+              {/* Email */}
+              <TextField
+                label="Email"
+                type="email"
+                placeholder="you@example.com"
+                fullWidth
+                {...register("email")}
+                error={!!errors.email}
+                helperText={errors.email?.message}
+              />
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading || !!successMessage}
-          className="w-full rounded-md bg-indigo-600 py-2 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {loading
-            ? "Creating account..."
-            : successMessage
-            ? "OTP Sent ✓"
-            : "Sign Up"}
-        </button>
+              {/* Phone */}
+              <TextField
+                label="Phone"
+                placeholder="9876543210"
+                fullWidth
+                {...register("phone")}
+                error={!!errors.phone}
+                helperText={errors.phone?.message}
+              />
 
-        {/* Footer */}
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Already have an account?{" "}
-          <span
-            onClick={() => navigate("/login")}
-            className="text-indigo-600 cursor-pointer hover:underline"
+              {/* Password */}
+              <TextField
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                fullWidth
+                {...register("password")}
+                error={!!errors.password}
+                helperText={errors.password?.message}
+              />
+
+              {/* Submit */}
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+                size="large"
+                disabled={loading || !!successMessage}
+              >
+                {loading
+                  ? "Creating account..."
+                  : successMessage
+                  ? "OTP Sent ✓"
+                  : "Sign Up"}
+              </Button>
+            </Stack>
+          </form>
+
+          <Typography
+            textAlign="center"
+            variant="body2"
+            color="text.secondary"
+            mt={3}
           >
-            Login
-          </span>
-        </p>
-      </form>
-    </div>
+            Already have an account?{" "}
+            <Box
+              component="span"
+              sx={{
+                color: "primary.main",
+                cursor: "pointer",
+                textDecoration: "underline",
+              }}
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </Box>
+          </Typography>
+        </Paper>
+      </Container>
+    </Box>
   );
 }

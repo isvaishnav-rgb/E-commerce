@@ -29,8 +29,8 @@ export const getMyProductsApi = async () => {
 };
 
 
-export const getActiveProductsApi = async (params: any) => {
-    const { data } = await api.get("/product", {params});
+export const getActiveProductsApi = async () => {
+    const { data } = await api.get("/product");
   return data;
 };
 

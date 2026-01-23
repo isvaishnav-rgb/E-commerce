@@ -3,7 +3,7 @@ const Order = require("../../models/Order.model");
 const User = require("../../models/User.model");
 const Product = require("../../models/Product.model");
 
-const placeOrder = async (req: Request, res:  Response) => {
+const placeOrder = async (req: Request, res: Response) => {
   try {
     const userId = req?.user?.id;
     const { items, address, phone } = req.body;
@@ -35,20 +35,35 @@ const placeOrder = async (req: Request, res:  Response) => {
        ORDER ITEMS
     ===================== */
     let totalAmount = 0;
-    const orderItems = [];
+    const orderItems: any[] = [];
 
     for (const item of items) {
       const product = await Product.findById(item.product);
 
+      // Check if product exists and is active
       if (!product || product.isDeleted || product.status !== "Active") {
         return res.status(404).json({
-          message: "Product not available",
+          message: `${item.product} is not available`,
+        });
+      }
+
+      // ✅ Check stock
+      if (product.stock <= 0) {
+        return res.status(400).json({
+          message: `${product.name} is out of stock`,
         });
       }
 
       if (!item.quantity || item.quantity <= 0) {
         return res.status(400).json({
-          message: "Invalid quantity",
+          message: `Invalid quantity for ${product.name}`,
+        });
+      }
+
+      // ✅ Prevent buying more than available stock
+      if (item.quantity > product.stock) {
+        return res.status(400).json({
+          message: `Only ${product.stock} units of ${product.name} are available`,
         });
       }
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "../../schemas/auth.schema";
 import { loginApi, meApi } from "../../api/auth.api";
@@ -7,6 +7,14 @@ import { useDispatch } from "react-redux";
 import { loginSuccess, setUser } from "../../features/auth/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Alert,
+  CircularProgress,
+} from "@mui/material";
 
 export default function Login() {
   const dispatch = useDispatch();
@@ -16,158 +24,146 @@ export default function Login() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+  const { control, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(loginSchema),
   });
 
-  /* -------------------------
-     SUBMIT
-  -------------------------- */
   const onSubmit = async (data: any) => {
     try {
       setLoading(true);
       setServerError(null);
 
       const res = await loginApi(data);
-      
-
       const { accessToken, refreshToken } = res.data;
 
-      // ✅ Store tokens in localStorage
+      // Store tokens
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
 
-      // ✅ Sync Redux
       dispatch(loginSuccess(res.data));
 
       const resUser = await meApi();
-      dispatch(setUser(resUser.data))
+      dispatch(setUser(resUser.data));
 
-      // ✅ Show success message
       setSuccessMessage("🎉 Login successful! Redirecting...");
 
-      // ⏳ Navigate after delay
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
+      setTimeout(() => navigate("/"), 1500);
     } catch (err) {
       const error = err as AxiosError<any>;
-      setServerError(
-        error.response?.data?.message || "Login failed"
-      );
+      setServerError(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
-  /* -------------------------
-     UI
-  -------------------------- */
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "grey.100",
+        px: 2,
+      }}
+    >
+      <Box
+        component="form"
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg"
+        sx={{
+          width: "100%",
+          maxWidth: 400,
+          bgcolor: "background.paper",
+          p: 4,
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
       >
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+        <Typography variant="h4" fontWeight="bold" textAlign="center" mb={3}>
           Welcome Back 👋
-        </h2>
+        </Typography>
 
-        {/* ✅ Success Message */}
         {successMessage && (
-          <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700 text-center">
+          <Alert severity="success" sx={{ mb: 2 }} variant="outlined">
             {successMessage}
-          </div>
+          </Alert>
         )}
 
-        {/* 🔴 Error Message */}
         {serverError && (
-          <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600 text-center">
+          <Alert severity="error" sx={{ mb: 2 }} variant="outlined">
             {serverError}
-          </div>
+          </Alert>
         )}
 
         {/* Email */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <input
-            {...register("email")}
-            type="email"
-            placeholder="you@example.com"
-            disabled={!!successMessage}
-            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
-              errors.email
-                ? "border-red-400 focus:ring-red-300"
-                : "border-gray-300 focus:ring-indigo-300"
-            }`}
-          />
-          {errors.email && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.email.message}
-            </p>
+        <Controller
+          name="email"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              fullWidth
+              disabled={!!successMessage}
+              error={!!errors.email}
+              helperText={errors.email?.message?.toString()}
+              margin="normal"
+            />
           )}
-        </div>
+        />
 
         {/* Password */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <input
-            {...register("password")}
-            type="password"
-            placeholder="••••••••"
-            disabled={!!successMessage}
-            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
-              errors.password
-                ? "border-red-400 focus:ring-red-300"
-                : "border-gray-300 focus:ring-indigo-300"
-            }`}
-          />
-          {errors.password && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.password.message}
-            </p>
+        <Controller
+          name="password"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Password"
+              type="password"
+              placeholder="••••••••"
+              fullWidth
+              disabled={!!successMessage}
+              error={!!errors.password}
+              helperText={errors.password?.message?.toString()}
+              margin="normal"
+            />
           )}
-        </div>
+        />
 
         {/* Submit */}
-        <button
+        <Button
           type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 2, py: 1.5 }}
           disabled={loading || !!successMessage}
-          className="w-full rounded-md bg-indigo-600 py-2 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-60"
+          startIcon={loading && <CircularProgress size={20} />}
         >
           {successMessage
             ? "Logged in ✓"
             : loading
             ? "Logging in..."
             : "Login"}
-        </button>
+        </Button>
 
         {/* Footer */}
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <Typography variant="body2" color="text.secondary" textAlign="center" mt={2}>
           Don’t have an account?{" "}
-          <Link to="/signup">
-          <span className="text-indigo-600 cursor-pointer hover:underline">
+          <Link to="/signup" style={{ color: "#4f46e5", textDecoration: "underline" }}>
             Sign up
-          </span>
           </Link>
-        </p>
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Don you want to {" "}
-          <Link to="/forgot-password">
-          <span className="text-indigo-600 cursor-pointer hover:underline">
-            Forgot Password
-          </span>
+        </Typography>
+        <Typography variant="body2" color="text.secondary" textAlign="center" mt={1}>
+          Forgot your password?{" "}
+          <Link to="/forgot-password" style={{ color: "#4f46e5", textDecoration: "underline" }}>
+            Reset here
           </Link>
-        </p>
-      </form>
-    </div>
+        </Typography>
+      </Box>
+    </Box>
   );
 }

@@ -14,6 +14,17 @@ export interface IOrderItem {
   price: number;
 }
 
+const AddressSchema = new Schema(
+    {
+        street: String,
+        city: String,
+        state: String,
+        country: String,
+        pincode: String,
+    },
+    { _id: false }
+);
+
 export interface IOrder extends Document {
   user: mongoose.Types.ObjectId;
   items: IOrderItem[];
@@ -58,10 +69,7 @@ const OrderSchema = new Schema<IOrder>(
       required: true,
     },
 
-    address: {
-      type: String,
-      required: true,
-    },
+    address: AddressSchema,
 
     phone: {
       type: String,
