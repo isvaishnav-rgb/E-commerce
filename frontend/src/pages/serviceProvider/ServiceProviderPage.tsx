@@ -4,14 +4,11 @@ import { getMyServiceProviderApplicationApi } from "../../api/serviceProvider.ap
 import { setApplication } from "../../features/provider/providerSlice";
 import ServiceProviderForm from "./ServiceProviderForm";
 import ApplicationDetails from "./ApplicationDetails";
-import { Loader2 } from "lucide-react";
+import { CircularProgress, Box, Container } from "@mui/material";
 
 const ServiceProviderPage = () => {
   const dispatch = useDispatch();
-
-  const application = useSelector(
-    (state: any) => state.provider.application
-  );
+  const application = useSelector((state: any) => state.provider.application);
 
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -22,19 +19,14 @@ const ServiceProviderPage = () => {
     const fetchApplication = async () => {
       try {
         const res = await getMyServiceProviderApplicationApi();
-
         if (isMounted) {
           dispatch(setApplication(res?.data?.application ?? null));
         }
       } catch (err) {
         console.error("FETCH APPLICATION ERROR", err);
-        if (isMounted) {
-          dispatch(setApplication(null));
-        }
+        if (isMounted) dispatch(setApplication(null));
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -48,31 +40,39 @@ const ServiceProviderPage = () => {
   /* ⏳ Loading */
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-      </div>
+      <Box
+        minHeight="100vh"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        bgcolor="#f9fafb"
+      >
+        <CircularProgress color="primary" size={48} />
+      </Box>
     );
   }
 
   /* 📝 No application OR editing */
   if (!application || editMode) {
     return (
-      <ServiceProviderForm
-        editMode={Boolean(application)}
-        initialData={application}
-        onSuccess={() => {
-          setEditMode(false);
-        }}
-      />
+      <Container maxWidth="sm" sx={{ py: 4 }}>
+        <ServiceProviderForm
+          editMode={Boolean(application)}
+          initialData={application}
+          onSuccess={() => setEditMode(false)}
+        />
+      </Container>
     );
   }
 
   /* 📄 Application exists */
   return (
-    <ApplicationDetails
-      application={application}
-      onEdit={() => setEditMode(true)}
-    />
+    <Container maxWidth="sm" sx={{ py: 4 }}>
+      <ApplicationDetails
+        application={application}
+        onEdit={() => setEditMode(true)}
+      />
+    </Container>
   );
 };
 

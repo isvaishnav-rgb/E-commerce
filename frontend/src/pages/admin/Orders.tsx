@@ -1,6 +1,16 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { fetchOrders, updateOrderStatus } from "../../features/admin/adminThunk";
+import {
+  Box,
+  Typography,
+  Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Divider,
+} from "@mui/material";
 
 const Orders = () => {
   const dispatch = useAppDispatch();
@@ -15,66 +25,132 @@ const Orders = () => {
     dispatch(fetchOrders());
   };
 
-  const OrderStatus = ["Pending", "Confirmed", "Delivered", "Cancelled", "Returned"]
+  const OrderStatus = ["Pending", "Confirmed", "Delivered", "Cancelled", "Returned"];
 
   if (loading) {
-    return <p>Loading orders...</p>;
+    return (
+      <Typography variant="body1" textAlign="center" mt={4}>
+        Loading orders...
+      </Typography>
+    );
   }
 
   return (
-    <div>
-      <h1 className="text-xl md:text-2xl font-bold mb-4">All Orders</h1>
+    <Box>
+      <Typography variant="h5" fontWeight={600} mb={3}>
+        All Orders
+      </Typography>
 
       {!orders || orders.length === 0 ? (
-        <p>No orders found</p>
+        <Typography variant="body1">No orders found</Typography>
       ) : (
-        <div className="space-y-4">
+        <Box display="flex" flexDirection="column" gap={3}>
           {orders.map((order: any) => (
-            <div key={order._id} className="border p-4 rounded-lg shadow-sm bg-white">
-              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-3">
-                <div className="space-y-1">
-                  <p className="text-sm md:text-base"><strong>Order ID:</strong> <span className="text-gray-600">#{order._id.slice(-6)}</span></p>
-                  <p className="text-sm md:text-base"><strong>Customer:</strong> {order.user?.name}</p>
-                  <p className="text-xs text-gray-500">{order.user?.email}</p>
-                  <p className="text-sm md:text-base"><strong>Total:</strong> <span className="text-blue-600 font-semibold">₹{order.totalAmount}</span></p>
-                  <p className="text-xs text-gray-500"><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div className="w-full sm:w-auto flex items-center sm:block">
-                  <span className="sm:hidden font-bold mr-2 text-sm">Status:</span>
-                  <select
-                    value={order.status}
-                    onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                    className="flex-1 sm:w-auto border rounded px-2 py-1 text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
-                  >
-                    {OrderStatus.map((val, index) => <option value={val} key={index}>{val}</option>)}
-                  </select>
-                </div>
-              </div>
+            <Paper key={order._id} elevation={1} sx={{ p: 2 }}>
+              <Box
+                display="flex"
+                flexDirection={{ xs: "column", sm: "row" }}
+                justifyContent="space-between"
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                gap={2}
+                mb={1}
+              >
+                <Box>
+                  <Typography variant="body2">
+                    <strong>Order ID:</strong>{" "}
+                    <Box component="span" color="text.secondary">
+                      #{order._id.slice(-6)}
+                    </Box>
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Customer:</strong> {order.user?.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {order.user?.email}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Total:</strong>{" "}
+                    <Box component="span" color="primary.main" fontWeight={500}>
+                      ₹{order.totalAmount}
+                    </Box>
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    <strong>Date:</strong>{" "}
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </Typography>
+                </Box>
 
-              <div className="border-t pt-3">
-                <p className="text-sm font-bold mb-1">Items:</p>
-                <div className="space-y-1">
-                  {order.items?.map((item: any, index: number) => (
-                    <div key={index} className="flex justify-between items-center text-xs md:text-sm pl-2 border-l-2 border-gray-100">
-                      <span>{item.product?.name} <span className="text-gray-400">× {item.quantity}</span></span>
-                      <span className="font-medium">₹{item.price * item.quantity}</span>
-                    </div>
+                <Box width={{ xs: "100%", sm: "auto" }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      value={order.status}
+                      label="Status"
+                      onChange={(e) =>
+                        handleStatusChange(order._id, e.target.value)
+                      }
+                    >
+                      {OrderStatus.map((val, idx) => (
+                        <MenuItem value={val} key={idx}>
+                          {val}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Box>
+
+              <Divider sx={{ my: 1 }} />
+
+              <Box>
+                <Typography variant="body2" fontWeight={600} mb={0.5}>
+                  Items:
+                </Typography>
+                <Box display="flex" flexDirection="column" gap={0.5}>
+                  {order.items?.map((item: any, idx: number) => (
+                    <Box
+                      key={idx}
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      pl={1}
+                      borderLeft={2}
+                      borderColor="grey.100"
+                      fontSize={{ xs: "0.8rem", md: "0.9rem" }}
+                    >
+                      <Box>
+                        {item.product?.name}{" "}
+                        <Box component="span" color="text.secondary">
+                          × {item.quantity}
+                        </Box>
+                      </Box>
+                      <Box fontWeight={500}>
+                        ₹{item.price * item.quantity}
+                      </Box>
+                    </Box>
                   ))}
-                </div>
-              </div>
+                </Box>
+              </Box>
 
-              <div className="mt-4 pt-3 border-t text-xs md:text-sm text-gray-600 space-y-1">
-                <p><strong>Address:</strong></p>
-                <p className="leading-relaxed">
-                  {order?.address?.street}, {order?.address?.city}, {order?.address?.state} - {order?.address?.pincode}, {order?.address?.country}
-                </p>
-                <p><strong>Phone:</strong> {order.phone}</p>
-              </div>
-            </div>
+              <Divider sx={{ my: 1 }} />
+
+              <Box mt={1} fontSize={{ xs: "0.8rem", md: "0.9rem" }} color="text.secondary">
+                <Typography>
+                  <strong>Address:</strong>
+                </Typography>
+                <Typography>
+                  {order?.address?.street}, {order?.address?.city}, {order?.address?.state} -{" "}
+                  {order?.address?.pincode}, {order?.address?.country}
+                </Typography>
+                <Typography>
+                  <strong>Phone:</strong> {order.phone}
+                </Typography>
+              </Box>
+            </Paper>
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

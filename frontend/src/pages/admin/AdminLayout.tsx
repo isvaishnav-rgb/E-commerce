@@ -1,39 +1,49 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
-import { Menu } from "lucide-react";
+import { Menu as MenuIcon } from "@mui/icons-material";
+import { Box, AppBar, Toolbar, IconButton, Typography, Paper } from "@mui/material";
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <Box display="flex" minHeight="100vh" bgcolor="grey.100">
       {/* Sidebar */}
       <AdminSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <Box flex="1" display="flex" flexDirection="column" minWidth={0}>
         {/* Top Bar */}
-        <header className="h-16 bg-white border-b flex items-center px-4 md:px-6 shadow-sm">
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="lg:hidden p-2 mr-2 hover:bg-gray-100 rounded-lg"
-          >
-            <Menu size={24} />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-700 truncate">
-            Admin Dashboard
-          </h1>
-        </header>
+        <AppBar position="static" color="inherit" elevation={1}>
+          <Toolbar>
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              onClick={() => setIsSidebarOpen(true)}
+              sx={{ display: { lg: "none" }, mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{ flexGrow: 1, color: "text.primary", textOverflow: "ellipsis" }}
+            >
+              Admin Dashboard
+            </Typography>
+          </Toolbar>
+        </AppBar>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
-          <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+        <Box flex="1" p={{ xs: 2, md: 3 }} overflow="auto">
+          <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, boxShadow: 1 }}>
             <Outlet />
-          </div>
-        </main>
-      </div>
-    </div>
+          </Paper>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

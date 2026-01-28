@@ -6,11 +6,20 @@ import {
   rejectApplication,
 } from "../../features/admin/adminThunk";
 import { CheckCircle, XCircle } from "lucide-react";
+import {
+  Box,
+  Typography,
+  Paper,
+  Chip,
+  Button,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 
-const statusStyles: Record<string, string> = {
-  Pending: "bg-yellow-100 text-yellow-700",
-  Approved: "bg-green-100 text-green-700",
-  Rejected: "bg-red-100 text-red-700",
+const statusColors: Record<string, { bg: string; text: string }> = {
+  Pending: { bg: "#FEF3C7", text: "#B45309" }, // Yellow
+  Approved: { bg: "#DCFCE7", text: "#166534" }, // Green
+  Rejected: { bg: "#FEE2E2", text: "#991B1B" }, // Red
 };
 
 const ProviderApplications = () => {
@@ -31,139 +40,213 @@ const ProviderApplications = () => {
     dispatch(fetchApplications());
   };
 
-  /* Loading State */
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-[50vh]">
-        <p className="text-gray-500">Loading applications...</p>
-      </div>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <Typography color="text.secondary">Loading applications...</Typography>
+      </Box>
     );
   }
 
   return (
-    <div>
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+    <Box>
+      {/* Header */}
+      <Box
+        display="flex"
+        flexDirection={isMobile ? "column" : "row"}
+        justifyContent="space-between"
+        alignItems={isMobile ? "flex-start" : "center"}
+        gap={1}
+        mb={3}
+      >
+        <Typography variant="h5" fontWeight={600}>
           Provider Applications
-        </h1>
-        <p className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-          Total: {applications?.length || 0}
-        </p>
-      </div>
+        </Typography>
+        <Chip
+          label={`Total: ${applications?.length || 0}`}
+          sx={{ backgroundColor: "grey.100" }}
+          size="small"
+        />
+      </Box>
 
       {/* Empty State */}
       {!applications || applications.length === 0 ? (
-        <div className="text-center py-20 text-gray-500 bg-white border rounded-xl">
-          No provider applications found
-        </div>
+        <Paper
+          sx={{
+            textAlign: "center",
+            py: 8,
+            backgroundColor: "background.paper",
+          }}
+        >
+          <Typography color="text.secondary">
+            No provider applications found
+          </Typography>
+        </Paper>
       ) : (
-        <div className="grid gap-4">
+        <Box display="flex" flexDirection="column" gap={3}>
           {applications.map((app: any) => (
-            <div
+            <Paper
               key={app._id}
-              className="bg-white border rounded-xl p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow"
+              sx={{
+                p: isMobile ? 2 : 3,
+                backgroundColor: "background.paper",
+                borderRadius: 2,
+                boxShadow: 1,
+                transition: "0.3s",
+                "&:hover": { boxShadow: 3 },
+              }}
             >
               {/* Header */}
-              <div className="flex justify-between items-start mb-4 gap-2">
-                <div className="min-w-0">
-                  <h3 className="font-bold text-base md:text-lg text-gray-800 truncate">
+              <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
+                <Box minWidth={0}>
+                  <Typography
+                    fontWeight={600}
+                    variant={isMobile ? "body1" : "h6"}
+                    noWrap
+                  >
                     {app.user?.name}
-                  </h3>
-                  <p className="text-xs md:text-sm text-gray-500 truncate">
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap>
                     {app.user?.email}
-                  </p>
-                </div>
+                  </Typography>
+                </Box>
 
-                <span
-                  className={`shrink-0 px-2.5 py-0.5 text-[10px] md:text-xs font-semibold rounded-full uppercase tracking-wider ${statusStyles[app.status]}`}
-                >
-                  {app.status}
-                </span>
-              </div>
+                <Chip
+                  label={app.status}
+                  size="small"
+                  sx={{
+                    bgcolor: statusColors[app.status]?.bg,
+                    color: statusColors[app.status]?.text,
+                    fontWeight: 600,
+                  }}
+                />
+              </Box>
 
               {/* Details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs md:text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                <p>
-                  <strong className="text-gray-900">Business:</strong> {app.businessName}
-                </p>
-                <p>
-                  <strong className="text-gray-900">Applied On:</strong>{" "}
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  backgroundColor: "grey.50",
+                  borderRadius: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1,
+                }}
+              >
+                <Typography variant="body2">
+                  <strong>Business:</strong> {app.businessName}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Applied On:</strong>{" "}
                   {new Date(app.appliedAt).toLocaleDateString()}
-                </p>
+                </Typography>
                 {app.adminRemark && (
-                  <p className="sm:col-span-2 italic text-gray-600">
-                    <strong className="text-gray-900 not-italic">Admin Remark:</strong> {app.adminRemark}
-                  </p>
+                  <Typography variant="body2" fontStyle="italic" color="text.secondary">
+                    <strong style={{ fontStyle: "normal" }}>Admin Remark:</strong>{" "}
+                    {app.adminRemark}
+                  </Typography>
                 )}
-              </div>
+              </Paper>
 
               {/* Documents */}
               {app.kycDocuments?.length > 0 && (
-                <div className="mt-5">
-                  <h4 className="text-sm font-bold text-gray-800 mb-3 border-b pb-1">
+                <Box mt={3}>
+                  <Typography variant="subtitle2" fontWeight={600} mb={1}>
                     Documents
-                  </h4>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  </Typography>
+                  <Box display="flex" flexWrap="wrap" gap={2}>
                     {app.kycDocuments.map((doc: any, index: number) => (
-                      <div
+                      <Paper
                         key={index}
-                        className="border rounded-lg p-2 bg-white shadow-sm hover:border-blue-200 transition-colors"
+                        sx={{
+                          p: 1,
+                          borderRadius: 1,
+                          border: "1px solid",
+                          borderColor: "grey.300",
+                          width: isMobile ? "100%" : 200,
+                        }}
                       >
-                        <div className="flex justify-between items-center mb-2">
-                          <p className="text-xs font-bold text-gray-700">
+                        <Box display="flex" justifyContent="space-between" mb={1}>
+                          <Typography variant="caption" fontWeight={600}>
                             {doc.type}
-                          </p>
-                          <p className="text-[10px] text-gray-400">
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
                             ID: {doc.documentNumber}
-                          </p>
-                        </div>
+                          </Typography>
+                        </Box>
 
-                        <div className="relative group overflow-hidden rounded-md bg-gray-100">
+                        <Box
+                          sx={{
+                            position: "relative",
+                            overflow: "hidden",
+                            borderRadius: 1,
+                            bgcolor: "grey.100",
+                            cursor: "pointer",
+                          }}
+                        >
                           <img
                             src={doc.documentImage}
                             alt={doc.type}
-                            className="w-full h-32 md:h-40 object-contain rounded transition transform group-hover:scale-110 cursor-pointer"
-                            onClick={() =>
-                              window.open(doc.documentImage, "_blank")
-                            }
+                            style={{
+                              width: "100%",
+                              height: 150,
+                              objectFit: "contain",
+                              transition: "transform 0.3s",
+                            }}
+                            onClick={() => window.open(doc.documentImage, "_blank")}
+                            onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+                            onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
                           />
-                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center pointer-events-none">
-                            <span className="text-white text-xs font-medium">View Full Image</span>
-                          </div>
-                        </div>
-                      </div>
+                        </Box>
+                      </Paper>
                     ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               )}
 
               {/* Actions */}
               {app.status === "Pending" && (
-                <div className="flex flex-col sm:flex-row gap-2 mt-6">
-                  <button
+                <Box
+                  display="flex"
+                  flexDirection={isMobile ? "column" : "row"}
+                  gap={2}
+                  mt={3}
+                >
+                  <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<CheckCircle />}
                     onClick={() => handleApprove(app._id)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition cursor-pointer font-bold text-sm"
+                    fullWidth={isMobile}
                   >
-                    <CheckCircle size={18} />
                     Approve Application
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
+                    variant="contained"
+                    color="error"
+                    startIcon={<XCircle />}
                     onClick={() => handleReject(app._id)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition cursor-pointer font-bold text-sm"
+                    fullWidth={isMobile}
                   >
-                    <XCircle size={18} />
                     Reject Application
-                  </button>
-                </div>
+                  </Button>
+                </Box>
               )}
-            </div>
+            </Paper>
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

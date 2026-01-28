@@ -62,7 +62,7 @@ const CheckoutPage = () => {
   ===================== */
   const subtotal = cartItems.reduce(
     (sum: number, item: any) =>
-      sum + item.product.finalPrice * item.quantity,
+      sum + item.product.price * item.quantity,
     0
   );
 
@@ -74,7 +74,7 @@ const CheckoutPage = () => {
     0
   );
 
-  const total = subtotal;
+  const total = subtotal-discount;
 
   /* =====================
      EMPTY CART
@@ -198,7 +198,6 @@ const CheckoutPage = () => {
                         quantity: 0,
                       })
                     );
-
                     toast.error(
                       `${item.product.name} removed from cart`,
                     );
@@ -207,7 +206,6 @@ const CheckoutPage = () => {
                 >
                   <Trash2 size={18} />
                 </button>
-
               </div>
             </div>
 

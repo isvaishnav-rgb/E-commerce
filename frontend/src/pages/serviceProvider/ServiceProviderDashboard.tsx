@@ -1,20 +1,28 @@
-import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import ProductModal from "../../modules/ProductModal";
-import {
-  getMyProductsApi,
-  deleteProductApi,
-} from "../../api/product.api";
-import type { Product } from "../../types/Products";
-import ProductImageCarousel from "../../components/ProductImageCarousel";
 import { useNavigate } from "react-router-dom";
+import { Add } from "@mui/icons-material";
+import {
+  Box,
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Button,
+  Fab,
+} from "@mui/material";
+
+import ProductModal from "../../modules/ProductModal";
+import ProductImageCarousel from "../../components/ProductImageCarousel";
+import { getMyProductsApi, deleteProductApi } from "../../api/product.api";
+import type { Product } from "../../types/Products";
 
 const ServiceProviderDashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"add" | "edit">("add");
-  const [selectedProduct, setSelectedProduct] =
-    useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(
+    null
+  );
   const navigate = useNavigate();
 
   const fetchProducts = async () => {
@@ -31,72 +39,100 @@ const ServiceProviderDashboard = () => {
     fetchProducts();
   };
 
-  const handleNavigate=(productId: string)=> {
-    navigate(`/${productId}`)
-
-  }
+  const handleNavigate = (productId: string) => {
+    navigate(`/${productId}`);
+  };
 
   return (
-    <div className="p-6">
+    <Box p={3}>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">My Products</h1>
-        <button
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={4}
+      >
+        <Typography variant="h5" fontWeight={700}>
+          My Products
+        </Typography>
+
+        <Fab
+          color="primary"
+          variant="extended"
           onClick={() => {
             setMode("add");
             setSelectedProduct(null);
             setOpen(true);
           }}
-          className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white"
         >
-          <Plus size={18} />
+          <Add sx={{ mr: 1 }} />
           Add Product
-        </button>
-      </div>
+        </Fab>
+      </Box>
 
       {/* Products */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {products.map((p) => (
-          <div
-            key={p._id}
-            className="rounded-xl bg-white p-4 shadow cursor-pointer"
-            onClick={()=>handleNavigate(p._id)}
+      <Box
+        display="flex"
+        flexWrap="wrap"
+        gap={5}
+        justifyContent={{ xs: "center", sm: "flex-start" }}
+      >
+        {products.map((product) => (
+          <Card
+            key={product._id}
+            sx={{
+              cursor: "pointer",
+              "&:hover": { boxShadow: 6 },
+              width: { xs: "100%", sm: 290, md: 260 },
+              display: "flex",
+              flexDirection: "column",
+            }}
+            onClick={() => handleNavigate(product._id)}
           >
             {/* Image Carousel */}
-            <ProductImageCarousel images={p.images} />
+            <ProductImageCarousel images={product.images} />
 
-            <h3 className="mt-3 text-lg font-semibold">
-              {p.name}
-            </h3>
+            <CardContent sx={{ flexGrow: 1 }}>
+              <Typography variant="h6" fontWeight={600} gutterBottom>
+                {product.name}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                ₹{product.finalPrice || product.price}
+              </Typography>
+            </CardContent>
 
-            <p className="text-gray-700">
-              ₹{p.finalPrice || p.price}
-            </p>
-
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => {
+            <CardActions sx={{ gap: 1, p: 2 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                fullWidth
+                onClick={(e) => {
+                  e.stopPropagation();
                   setMode("edit");
-                  setSelectedProduct(p);
+                  setSelectedProduct(product);
                   setOpen(true);
                 }}
-                className="flex-1 rounded border px-3 py-1 text-sm"
               >
                 Edit
-              </button>
-
-              <button
-                onClick={() => handleDelete(p._id)}
-                className="flex-1 rounded border px-3 py-1 text-sm text-red-500"
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                fullWidth
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(product._id);
+                }}
               >
                 Delete
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardActions>
+          </Card>
         ))}
-      </div>
+      </Box>
 
-      {/* Modal */}
+      {/* Product Modal */}
       <ProductModal
         isOpen={open}
         onClose={() => {
@@ -106,7 +142,7 @@ const ServiceProviderDashboard = () => {
         type={mode}
         product={selectedProduct}
       />
-    </div>
+    </Box>
   );
 };
 

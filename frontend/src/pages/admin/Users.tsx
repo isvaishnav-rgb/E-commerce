@@ -1,12 +1,27 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { fetchUsers } from "../../features/admin/adminThunk";
+import {
+  Box,
+  Typography,
+  Paper,
+  Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 
 const Users = () => {
   const dispatch = useAppDispatch();
   const { users, loading } = useAppSelector((s: any) => s.admin);
 
-  const userTableHeader = ["Name", "Email", "Phone", "Role", "Verified", "Status", "Joined"]
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
     dispatch(fetchUsers());
@@ -14,148 +29,184 @@ const Users = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <p className="text-gray-500">Loading users...</p>
-      </div>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <Typography color="text.secondary">Loading users...</Typography>
+      </Box>
     );
   }
 
   return (
-    <div>
+    <Box>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+      <Box
+        display="flex"
+        flexDirection={isMobile ? "column" : "row"}
+        justifyContent="space-between"
+        alignItems={isMobile ? "flex-start" : "center"}
+        gap={1}
+        mb={3}
+      >
+        <Typography variant="h5" fontWeight={600}>
           Users
-        </h1>
-        <p className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-          Total: {users.length}
-        </p>
-      </div>
+        </Typography>
+        <Chip
+          label={`Total: ${users.length}`}
+          size="small"
+          sx={{ backgroundColor: "grey.100" }}
+        />
+      </Box>
 
       {/* Mobile Card View */}
-      <div className="grid grid-cols-1 gap-4 md:hidden">
-        {users.map((u: any) => (
-          <div key={u._id} className="bg-white border rounded-xl p-4 shadow-sm">
-            <div className="flex justify-between items-start mb-3">
-              <div className="min-w-0">
-                <h3 className="font-bold text-gray-800 truncate">{u.name}</h3>
-                <p className="text-xs text-gray-500 truncate">{u.email}</p>
-              </div>
-              <span className="shrink-0 px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-indigo-100 text-indigo-700">
-                {u.role}
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 text-xs border-t pt-3">
-              <div>
-                <p className="text-gray-400 mb-1">Phone</p>
-                <p className="font-medium text-gray-700">{u.phone || "-"}</p>
-              </div>
-              <div>
-                <p className="text-gray-400 mb-1">Joined</p>
-                <p className="font-medium text-gray-700">{new Date(u.createdAt).toLocaleDateString()}</p>
-              </div>
-              <div>
-                <p className="text-gray-400 mb-1">Verification</p>
-                <span
-                  className={`inline-block px-2 py-0.5 font-bold rounded-full ${u.verified
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                    }`}
-                >
-                  {u.verified ? "Verified" : "Unverified"}
-                </span>
-              </div>
-              <div>
-                <p className="text-gray-400 mb-1">Status</p>
-                <span
-                  className={`inline-block px-2 py-0.5 font-bold rounded-full ${u.isActive
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-200 text-gray-600"
-                    }`}
-                >
-                  {u.isActive ? "Active" : "Inactive"}
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {isMobile && (
+        <Box display="flex" flexDirection="column" gap={2}>
+          {users.map((u: any) => (
+            <Paper key={u._id} sx={{ p: 2, borderRadius: 2, boxShadow: 1 }}>
+              <Box display="flex" justifyContent="space-between" mb={2}>
+                <Box minWidth={0}>
+                  <Typography fontWeight={600} noWrap>
+                    {u.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap>
+                    {u.email}
+                  </Typography>
+                </Box>
+                <Chip
+                  label={u.role}
+                  size="small"
+                  sx={{ bgcolor: "primary.100", color: "primary.700", fontWeight: 600 }}
+                />
+              </Box>
+
+              <Box display="flex" flexDirection="column" gap={1}>
+                <Box display="flex" justifyContent="space-between">
+                  <Typography variant="caption" color="text.secondary">
+                    Phone
+                  </Typography>
+                  <Typography variant="body2">{u.phone || "-"}</Typography>
+                </Box>
+
+                <Box display="flex" justifyContent="space-between">
+                  <Typography variant="caption" color="text.secondary">
+                    Joined
+                  </Typography>
+                  <Typography variant="body2">
+                    {new Date(u.createdAt).toLocaleDateString()}
+                  </Typography>
+                </Box>
+
+                <Box display="flex" justifyContent="space-between">
+                  <Typography variant="caption" color="text.secondary">
+                    Verification
+                  </Typography>
+                  <Chip
+                    label={u.verified ? "Verified" : "Unverified"}
+                    size="small"
+                    sx={{
+                      bgcolor: u.verified ? "success.100" : "error.100",
+                      color: u.verified ? "success.700" : "error.700",
+                      fontWeight: 600,
+                    }}
+                  />
+                </Box>
+
+                <Box display="flex" justifyContent="space-between">
+                  <Typography variant="caption" color="text.secondary">
+                    Status
+                  </Typography>
+                  <Chip
+                    label={u.isActive ? "Active" : "Inactive"}
+                    size="small"
+                    sx={{
+                      bgcolor: u.isActive ? "success.100" : "grey.200",
+                      color: u.isActive ? "success.700" : "text.secondary",
+                      fontWeight: 600,
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Paper>
+          ))}
+        </Box>
+      )}
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-white rounded-xl shadow-sm border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                {userTableHeader.map((userTableHeading, index) =>
-                  <th className="text-left px-4 py-3" key={index}>{userTableHeading}</th>
+      {!isMobile && (
+        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 1 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                {["Name", "Email", "Phone", "Role", "Verified", "Status", "Joined"].map(
+                  (header) => (
+                    <TableCell key={header} sx={{ fontWeight: 600 }}>
+                      {header}
+                    </TableCell>
+                  )
                 )}
-              </tr>
-            </thead>
+              </TableRow>
+            </TableHead>
 
-            <tbody>
+            <TableBody>
               {users.map((u: any) => (
-                <tr
-                  key={u._id}
-                  className="border-b hover:bg-gray-50 transition"
-                >
-                  <td className="px-4 py-3 font-medium text-gray-800">
-                    {u.name}
-                  </td>
-
-                  <td className="px-4 py-3 text-gray-700">
-                    {u.email}
-                  </td>
-
-                  <td className="px-4 py-3 text-gray-700">
-                    {u.phone || "-"}
-                  </td>
-
-                  <td className="px-4 py-3 capitalize">
-                    <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700">
-                      {u.role}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-3 text-center">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${u.verified
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                        }`}
-                    >
-                      {u.verified ? "Verified" : "Unverified"}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-3 text-center">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${u.isActive
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-200 text-gray-600"
-                        }`}
-                    >
-                      {u.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-3 text-right text-gray-600">
-                    {new Date(u.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
+                <TableRow key={u._id} hover>
+                  <TableCell>{u.name}</TableCell>
+                  <TableCell>{u.email}</TableCell>
+                  <TableCell>{u.phone || "-"}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={u.role}
+                      size="small"
+                      sx={{ bgcolor: "primary.100", color: "primary.700", fontWeight: 600 }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={u.verified ? "Verified" : "Unverified"}
+                      size="small"
+                      sx={{
+                        bgcolor: u.verified ? "success.100" : "error.100",
+                        color: u.verified ? "success.700" : "error.700",
+                        fontWeight: 600,
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={u.isActive ? "Active" : "Inactive"}
+                      size="small"
+                      sx={{
+                        bgcolor: u.isActive ? "success.100" : "grey.200",
+                        color: u.isActive ? "success.700" : "text.secondary",
+                        fontWeight: 600,
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>{new Date(u.createdAt).toLocaleDateString()}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {users.length === 0 && (
-        <div className="text-center py-12 bg-white border rounded-xl mt-4">
-          <p className="text-gray-500">No users found</p>
-        </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
-    </div>
+
+      {/* Empty State */}
+      {users.length === 0 && (
+        <Paper
+          sx={{
+            textAlign: "center",
+            py: 8,
+            backgroundColor: "background.paper",
+            mt: 2,
+          }}
+        >
+          <Typography color="text.secondary">No users found</Typography>
+        </Paper>
+      )}
+    </Box>
   );
 };
 

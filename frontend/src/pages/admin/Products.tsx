@@ -4,12 +4,39 @@ import { fetchProducts } from "../../features/admin/adminThunk";
 import { deleteProductApi } from "../../api/admin.api";
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Button,
+  Chip,
+  Avatar,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 
 const Products = () => {
   const dispatch = useAppDispatch();
   const products = useAppSelector((s: any) => s.admin.products);
 
-  const tableHeader = ["Product", "Category", "Price", "Discount", "FinalPrice", "Stock", "Actions"]
+  const tableHeader = [
+    "Product",
+    "Category",
+    "Price",
+    "Discount",
+    "FinalPrice",
+    "Stock",
+    "Actions",
+  ];
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
     dispatch(fetchProducts());
@@ -18,163 +45,174 @@ const Products = () => {
   const remove = async (id: string) => {
     await deleteProductApi(id);
     dispatch(fetchProducts());
+    toast.success("Product deleted successfully");
   };
 
   return (
-    <div>
+    <Box>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+      <Box
+        display="flex"
+        flexDirection={isMobile ? "column" : "row"}
+        justifyContent="space-between"
+        alignItems={isMobile ? "flex-start" : "center"}
+        gap={1}
+        mb={3}
+      >
+        <Typography variant="h5" fontWeight={600}>
           Products
-        </h1>
-        <p className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            backgroundColor: "grey.100",
+            px: 2,
+            py: 0.5,
+            borderRadius: 2,
+          }}
+        >
           Total: {products?.length}
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
       {/* Mobile Card View */}
-      <div className="grid grid-cols-1 gap-4 md:hidden">
-        {products && products.map((p: any) => (
-          <div key={p?._id} className="bg-white border rounded-lg p-4 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <img
-                src={p?.images?.[0]}
-                alt={p?.name}
-                className="w-16 h-16 rounded-md object-cover border"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-800 truncate">{p?.name}</p>
-                <p className="text-xs text-gray-500">#{p?._id.slice(-6)}</p>
-                <p className="text-sm text-blue-600 font-medium">{p?.category}</p>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2 text-sm mb-4">
-              <div>
-                <p className="text-gray-500 text-xs">Price</p>
-                <p className="font-medium">₹{p?.price}</p>
-              </div>
-              <div>
-                <p className="text-gray-500 text-xs">Discount</p>
-                <p className="font-medium text-green-600">{p?.discount | 0}% off</p>
-              </div>
-              <div>
-                <p className="text-gray-500 text-xs">Final Price</p>
-                <p className="font-bold text-blue-700">₹{p?.finalPrice || p?.price}</p>
-              </div>
-              <div>
-                <p className="text-gray-500 text-xs">Stock</p>
-                <span
-                  className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${p.stock > 0
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
-                    }`}
-                >
-                  {p?.stock} units
-                </span>
-              </div>
-            </div>
+      {isMobile && (
+        <Box display="flex" flexDirection="column" gap={2}>
+          {products?.map((p: any) => (
+            <Paper key={p._id} sx={{ p: 2 }} elevation={1}>
+              <Box display="flex" alignItems="center" gap={2} mb={2}>
+                <Avatar
+                  src={p?.images?.[0]}
+                  variant="rounded"
+                  sx={{ width: 64, height: 64, border: "1px solid", borderColor: "grey.300" }}
+                />
+                <Box flex={1} minWidth={0}>
+                  <Typography fontWeight={600} noWrap>
+                    {p?.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    #{p?._id.slice(-6)}
+                  </Typography>
+                  <Typography variant="body2" color="primary.main">
+                    {p?.category}
+                  </Typography>
+                </Box>
+              </Box>
 
-            <div className="border-t pt-3">
-              <button
-                onClick={() => {
-                  remove(p._id);
-                  toast.success("Product deleted successfully");
-                }}
-                className="w-full flex items-center justify-center gap-2 text-red-600 hover:bg-red-50 py-2 rounded-md transition-colors font-medium border border-red-100"
+              <Box display="flex" flexWrap="wrap" gap={2} mb={2}>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Price
+                  </Typography>
+                  <Typography fontWeight={500}>₹{p?.price}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Discount
+                  </Typography>
+                  <Typography fontWeight={500} color="success.main">
+                    {p?.discount || 0}% off
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Final Price
+                  </Typography>
+                  <Typography fontWeight={600} color="primary.dark">
+                    ₹{p?.finalPrice || p?.price}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Stock
+                  </Typography>
+                  <Chip
+                    label={`${p?.stock} units`}
+                    size="small"
+                    color={p?.stock > 0 ? "success" : "error"}
+                  />
+                </Box>
+              </Box>
+
+              <Button
+                variant="outlined"
+                color="error"
+                fullWidth
+                startIcon={<Trash2 size={16} />}
+                onClick={() => remove(p._id)}
               >
-                <Trash2 size={16} />
                 Delete Product
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+              </Button>
+            </Paper>
+          ))}
+        </Box>
+      )}
 
       {/* Desktop Table View */}
-      <div className="hidden md:block overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              {tableHeader.map((tableHeading, index) =>
-                <th className="text-left px-4 py-3" key={index}>{tableHeading}</th>
-              )}
-            </tr>
-          </thead>
+      {!isMobile && (
+        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                {tableHeader.map((header, idx) => (
+                  <TableCell key={idx}>{header}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
 
-          <tbody>
-            {products && products.map((p: any) => (
-              <tr
-                key={p?._id}
-                className="border-b hover:bg-gray-50 transition"
-              >
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={p?.images?.[0]}
-                      alt={p?.name}
-                      className="w-12 h-12 rounded-md object-cover border"
+            <TableBody>
+              {products?.map((p: any) => (
+                <TableRow key={p._id} hover>
+                  <TableCell>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Avatar
+                        src={p?.images?.[0]}
+                        variant="rounded"
+                        sx={{ width: 48, height: 48, border: "1px solid", borderColor: "grey.300" }}
+                      />
+                      <Box>
+                        <Typography fontWeight={500}>{p?.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          #{p?._id.slice(-6)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </TableCell>
+
+                  <TableCell>{p?.category}</TableCell>
+                  <TableCell>₹{p?.price}</TableCell>
+                  <TableCell color="success.main">{p?.discount || 0} %</TableCell>
+                  <TableCell>₹{p?.finalPrice || p?.price}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={p?.stock}
+                      size="small"
+                      color={p?.stock > 0 ? "success" : "error"}
                     />
-                    <div>
-                      <p className="font-medium text-gray-800">
-                        {p?.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {p?._id.slice(-6)}
-                      </p>
-                    </div>
-                  </div>
-                </td>
-
-                <td className="px-4 py-3 text-gray-700">
-                  {p?.category}
-                </td>
-
-                <td className="px-4 py-3 font-medium text-gray-800">
-                  ₹{p?.price}
-                </td>
-                <td className="px-4 py-3 font-medium text-gray-800 text-green-600">
-                  {p?.discount | 0} %
-                </td>
-                <td className="px-4 py-3 font-medium text-gray-800">
-                  ₹{p?.finalPrice || p?.price}
-                </td>
-
-                <td className="px-4 py-3">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${p.stock > 0
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                      }`}
-                  >
-                    {p?.stock}
-                  </span>
-                </td>
-
-                <td className="px-4 py-3 text-center">
-                  <button
-                    onClick={() => {
-                      remove(p._id);
-                      toast.success("Product deleted successfully");
-                    }}
-                    className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 cursor-pointer font-medium"
-                  >
-                    <Trash2 size={16} />
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {products.length === 0 && (
-        <div className="text-center py-12 bg-white border rounded-lg mt-4">
-          <p className="text-gray-500">No products found</p>
-        </div>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="text"
+                      color="error"
+                      startIcon={<Trash2 size={16} />}
+                      onClick={() => remove(p._id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
-    </div>
+
+      {products?.length === 0 && (
+        <Paper sx={{ textAlign: "center", py: 4, mt: 2 }}>
+          <Typography color="text.secondary">No products found</Typography>
+        </Paper>
+      )}
+    </Box>
   );
 };
 

@@ -1,97 +1,129 @@
-import { FileText, Edit3 } from "lucide-react";
+import { Edit, Description } from "@mui/icons-material";
+import { Box, Card, CardContent, Typography, Chip, Button, Link as MuiLink } from "@mui/material";
 import { Link } from "react-router-dom";
 
-const statusStyles: any = {
-  Approved: "bg-green-100 text-green-700",
-  Pending: "bg-yellow-100 text-yellow-700",
-  Rejected: "bg-red-100 text-red-700",
+const statusColors: any = {
+  Approved: "success",
+  Pending: "warning",
+  Rejected: "error",
 };
 
 const ApplicationDetails = ({ application, onEdit }: any) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 flex justify-center px-4 py-10">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl p-8 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Service Provider Application
-          </h2>
+    <Box
+      minHeight="100vh"
+      bgcolor="background.default"
+      display="flex"
+      justifyContent="center"
+      alignItems="flex-start"
+      py={10}
+      px={2}
+    >
+      <Card sx={{ width: "100%", maxWidth: 800, borderRadius: 3, p: 3 }}>
+        <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          {/* Header */}
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h5" fontWeight={700}>
+              Service Provider Application
+            </Typography>
+            <Chip
+              label={application.status}
+              color={statusColors[application.status]}
+              sx={{ fontWeight: 600 }}
+            />
+          </Box>
 
-          <span
-            className={`px-4 py-1.5 rounded-full text-sm font-medium ${
-              statusStyles[application.status]
-            }`}
-          >
-            {application.status}
-          </span>
-        </div>
+          {/* Info */}
+          <Box display="flex" flexDirection={{ xs: "column", md: "row" }} gap={2}>
+            <Box flex={1} bgcolor="grey.100" p={2} borderRadius={2}>
+              <Typography variant="caption" color="text.secondary">
+                Business Name
+              </Typography>
+              <Typography variant="body1" fontWeight={600}>
+                {application.businessName}
+              </Typography>
+            </Box>
 
-        {/* Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gray-50 rounded-xl p-4">
-            <p className="text-sm text-gray-500">Business Name</p>
-            <p className="font-semibold text-gray-800">
-              {application.businessName}
-            </p>
-          </div>
+            <Box flex={1} bgcolor="grey.100" p={2} borderRadius={2}>
+              <Typography variant="caption" color="text.secondary">
+                Phone
+              </Typography>
+              <Typography variant="body1" fontWeight={600}>
+                {application.businessPhone || "N/A"}
+              </Typography>
+            </Box>
+          </Box>
 
-          <div className="bg-gray-50 rounded-xl p-4">
-            <p className="text-sm text-gray-500">Phone</p>
-            <p className="font-semibold text-gray-800">
-              {application.businessPhone || "N/A"}
-            </p>
-          </div>
-        </div>
+          {/* Documents */}
+          <Box display="flex" flexDirection="column" gap={2}>
+            <Typography variant="subtitle1" fontWeight={600}>
+              Uploaded Documents
+            </Typography>
 
-        {/* Documents */}
-        <div>
-          <h3 className="font-semibold text-gray-800 mb-3">
-            Uploaded Documents
-          </h3>
+            <Box display="flex" flexWrap="wrap" gap={2}>
+              {application.kycDocuments.map((doc: any, idx: number) => (
+                <MuiLink
+                  key={idx}
+                  href={doc.documentImage}
+                  target="_blank"
+                  underline="none"
+                  sx={{ width: { xs: "100%", sm: "48%" } }}
+                >
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={2}
+                    p={2}
+                    borderRadius={2}
+                    border={1}
+                    borderColor="grey.300"
+                    sx={{
+                      "&:hover": { borderColor: "primary.main" },
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    <Description color="primary" />
+                    <Box>
+                      <Typography fontWeight={600}>{doc.type}</Typography>
+                      <Typography fontSize={12} color="primary.main">
+                        View document
+                      </Typography>
+                    </Box>
+                  </Box>
+                </MuiLink>
+              ))}
+            </Box>
+          </Box>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {application.kycDocuments.map((doc: any, idx: number) => (
-              <a
-                key={idx}
-                href={doc.documentImage}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-3 rounded-xl border p-4 hover:border-indigo-500 transition"
-              >
-                <FileText className="text-indigo-600" />
-                <div>
-                  <p className="font-medium text-gray-800">{doc.type}</p>
-                  <p className="text-xs text-indigo-600 underline">
-                    View document
-                  </p>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
+          {/* Actions */}
+          {application.status === "Pending" && (
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Edit />}
+              fullWidth
+              sx={{ mt: 2 }}
+              onClick={onEdit}
+            >
+              Edit Application
+            </Button>
+          )}
 
-        {/* Action */}
-        {application.status === "Pending" && (
-          <button
-            onClick={onEdit}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-white font-medium hover:bg-indigo-700 transition"
-          >
-            <Edit3 size={18} />
-            Edit Application
-          </button>
-        )}
-          {/* Action */}
-        {application.status === "Approved" && (
-          <Link to="/service-provider/dashboard">
-          <button
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-white font-medium hover:bg-indigo-700 transition"
-          >
-            Service Provider DashBoard
-          </button>
-          </Link>
-        )}
-      </div>
-    </div>
+          {application.status === "Approved" && (
+            <Button
+              component={Link}
+              to="/service-provider/dashboard"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mt: 2 }}
+            >
+              Service Provider Dashboard
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 

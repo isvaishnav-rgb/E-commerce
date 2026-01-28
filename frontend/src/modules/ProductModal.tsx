@@ -1,4 +1,18 @@
 import { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Typography,
+  IconButton,
+  Stack,
+  CircularProgress,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { createProductApi, updateProductApi } from "../api/product.api";
 import type { Product } from "../types/Products";
 
@@ -45,17 +59,24 @@ const ProductModal = ({ isOpen, onClose, type, product }: Props) => {
         category: product.category,
         stock: String(product.stock),
       });
+    } else {
+      setForm({
+        name: "",
+        description: "",
+        price: "",
+        discount: "",
+        category: "",
+        stock: "",
+      });
+      setImages([]);
+      setErrors({});
     }
-  }, [type, product]);
-
-  if (!isOpen) return null;
+  }, [type, product, isOpen]);
 
   /* =====================
      Image Handlers
   ===================== */
-  const handleImageChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
     const selectedFiles = Array.from(e.target.files);
@@ -125,190 +146,144 @@ const ProductModal = ({ isOpen, onClose, type, product }: Props) => {
      UI
   ===================== */
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
-        <h2 className="mb-6 text-xl font-bold text-gray-800">
-          {type === "add" ? "Add Product" : "Edit Product"}
-        </h2>
+    <Dialog open={isOpen} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {type === "add" ? "Add Product" : "Edit Product"}
+        <IconButton onClick={onClose}>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* Name */}
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Product Name *
-            </label>
-            <input
-              placeholder="Lahenga"
-              value={form.name}
-              onChange={(e) =>
-                setForm({ ...form, name: e.target.value })
-              }
-              className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2
-                ${errors.name
-                  ? "border-red-500 focus:ring-red-400"
-                  : "border-gray-300 focus:ring-indigo-500"
-                }`}
-            />
-            {errors.name && (
-              <p className="mt-1 text-xs text-red-500">{errors.name}</p>
-            )}
-          </div>
+      <DialogContent dividers>
+        <Stack spacing={2}>
+          <TextField
+            label="Product Name *"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            error={!!errors.name}
+            helperText={errors.name}
+            fullWidth
+          />
 
-          {/* Category */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Category
-            </label>
-            <input
-              placeholder="Women Wear"
-              value={form.category}
-              onChange={(e) =>
-                setForm({ ...form, category: e.target.value })
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+          <TextField
+            label="Category"
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            fullWidth
+          />
 
-          {/* Stock */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Stock *
-            </label>
-            <input
-              type="number"
-              value={form.stock}
-              onChange={(e) =>
-                setForm({ ...form, stock: e.target.value })
-              }
-              className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2
-                ${errors.stock
-                  ? "border-red-500 focus:ring-red-400"
-                  : "border-gray-300 focus:ring-indigo-500"
-                }`}
-            />
-            {errors.stock && (
-              <p className="mt-1 text-xs text-red-500">{errors.stock}</p>
-            )}
-          </div>
+          <TextField
+            label="Stock *"
+            type="number"
+            value={form.stock}
+            onChange={(e) => setForm({ ...form, stock: e.target.value })}
+            error={!!errors.stock}
+            helperText={errors.stock}
+            fullWidth
+          />
 
-          {/* Price */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Price *
-            </label>
-            <input
-              type="number"
-              value={form.price}
-              onChange={(e) =>
-                setForm({ ...form, price: e.target.value })
-              }
-              className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2
-                ${errors.price
-                  ? "border-red-500 focus:ring-red-400"
-                  : "border-gray-300 focus:ring-indigo-500"
-                }`}
-            />
-            {errors.price && (
-              <p className="mt-1 text-xs text-red-500">{errors.price}</p>
-            )}
-          </div>
+          <TextField
+            label="Price *"
+            type="number"
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
+            error={!!errors.price}
+            helperText={errors.price}
+            fullWidth
+          />
 
-          {/* Discount */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Discount (%)
-            </label>
-            <input
-              type="number"
-              value={form.discount}
-              onChange={(e) =>
-                setForm({ ...form, discount: e.target.value })
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+          <TextField
+            label="Discount (%)"
+            type="number"
+            value={form.discount}
+            onChange={(e) => setForm({ ...form, discount: e.target.value })}
+            fullWidth
+          />
 
-          {/* Description */}
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              rows={3}
-              value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+          <TextField
+            label="Description"
+            multiline
+            rows={3}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            fullWidth
+          />
 
-          {/* Images */}
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Images * (Max {MAX_IMAGES})
-            </label>
-
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageChange}
-              className="block w-full text-sm text-gray-600
-                file:mr-4 file:rounded-lg file:border-0
-                file:bg-indigo-600 file:px-4 file:py-2
-                file:text-sm file:font-medium file:text-white
-                hover:file:bg-indigo-700"
-            />
-
+          {/* Image Upload */}
+          <Box>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ justifyContent: "flex-start" }}
+            >
+              Upload Images (Max {MAX_IMAGES})
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                hidden
+                onChange={handleImageChange}
+              />
+            </Button>
             {errors.images && (
-              <p className="mt-1 text-xs text-red-500">{errors.images}</p>
+              <Typography variant="caption" color="error">
+                {errors.images}
+              </Typography>
             )}
 
             {/* Preview */}
             {images.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-3">
+              <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
                 {images.map((img, i) => (
-                  <div key={i} className="relative">
+                  <Box key={i} position="relative">
                     <img
                       src={URL.createObjectURL(img)}
-                      className="h-20 w-20 rounded-lg object-cover"
+                      alt="preview"
+                      style={{
+                        width: 80,
+                        height: 80,
+                        objectFit: "cover",
+                        borderRadius: 8,
+                      }}
                     />
-                    <button
-                      type="button"
+                    <IconButton
+                      size="small"
+                      sx={{
+                        position: "absolute",
+                        top: -6,
+                        right: -6,
+                        bgcolor: "error.main",
+                        color: "white",
+                        "&:hover": { bgcolor: "error.dark" },
+                      }}
                       onClick={() => removeImage(i)}
-                      className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center
-                        rounded-full bg-red-500 text-xs text-white"
                     >
                       ✕
-                    </button>
-                  </div>
+                    </IconButton>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             )}
-          </div>
-        </div>
+          </Box>
+        </Stack>
+      </DialogContent>
 
-        {/* Actions */}
-        <div className="mt-6 flex gap-4">
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full rounded-lg bg-indigo-600 py-2 font-medium text-white
-              hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {loading ? "Saving..." : "Save Product"}
-          </button>
-
-          <button
-            onClick={onClose}
-            className="w-full rounded-lg border border-gray-300 py-2 text-gray-700 hover:bg-gray-100"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose} variant="outlined" fullWidth>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          fullWidth
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : null}
+        >
+          Save Product
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

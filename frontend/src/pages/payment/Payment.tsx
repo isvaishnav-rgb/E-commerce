@@ -1,15 +1,26 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormLabel,
+  Button,
+  CircularProgress,
+  Stack,
+} from "@mui/material";
 
 const PaymentPage = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
 
   const [order, setOrder] = useState<any>(null);
-  const [paymentMethod, setPaymentMethod] = useState<
-    "COD" | "STRIPE"
-  >("COD");
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "STRIPE">("COD");
   const [loading, setLoading] = useState(false);
 
   /* =====================
@@ -17,8 +28,12 @@ const PaymentPage = () => {
   ===================== */
   useEffect(() => {
     const fetchOrder = async () => {
-      const res = await axios.get(`/order/${orderId}`);
-      setOrder(res.data.order);
+      try {
+        const res = await axios.get(`/order/${orderId}`);
+        setOrder(res.data.order);
+      } catch (err) {
+        console.error("Failed to fetch order", err);
+      }
     };
 
     fetchOrder();
@@ -33,18 +48,14 @@ const PaymentPage = () => {
     setLoading(true);
 
     try {
-      // ✅ CASH ON DELIVERY
       if (paymentMethod === "COD") {
         // order already created, payment stays Pending
         navigate("/orders");
         return;
       }
 
-      // ✅ STRIPE
-      const res = await axios.post(
-        `/payment/checkout/${orderId}`
-      );
-
+      // STRIPE PAYMENT
+      const res = await axios.post(`/payment/checkout/${orderId}`);
       window.location.href = res.data.checkoutUrl;
     } catch (err: any) {
       alert("Payment failed");
@@ -54,66 +65,80 @@ const PaymentPage = () => {
 
   if (!order) {
     return (
-      <p className="text-center mt-10">
-        Loading payment details...
-      </p>
+      <Box display="flex" justifyContent="center" mt={10}>
+        <CircularProgress />
+        <Typography ml={2} color="text.secondary">
+          Loading payment details...
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <div className="bg-white rounded-xl shadow p-6">
-        <h2 className="text-2xl font-bold mb-6">
-          Choose Payment Method
-        </h2>
+    <Box maxWidth="600px" mx="auto" px={2} py={10}>
+      <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
+        <CardContent>
+          <Typography variant="h5" fontWeight={600} mb={3}>
+            Choose Payment Method
+          </Typography>
 
-        {/* ORDER INFO */}
-        <div className="border rounded-lg p-4 mb-6">
-          <p>
-            <strong>Order ID:</strong>{" "}
-            {order._id.slice(-6)}
-          </p>
-          <p>
-            <strong>Total Amount:</strong> ₹
-            {order.totalAmount}
-          </p>
-          <p>
-            <strong>Status:</strong>{" "}
-            {order.paymentStatus}
-          </p>
-        </div>
+          {/* ORDER INFO */}
+          <Card
+            variant="outlined"
+            sx={{ mb: 4, borderRadius: 1, bgcolor: "#f5f5f5", p: 2 }}
+          >
+            <Stack spacing={1}>
+              <Typography>
+                <strong>Order ID:</strong> #{order._id.slice(-6)}
+              </Typography>
+              <Typography>
+                <strong>Total Amount:</strong> ₹{order.totalAmount}
+              </Typography>
+              <Typography>
+                <strong>Status:</strong> {order.paymentStatus}
+              </Typography>
+            </Stack>
+          </Card>
 
-        {/* PAYMENT OPTIONS */}
-        <div className="space-y-4">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="radio"
-              checked={paymentMethod === "COD"}
-              onChange={() => setPaymentMethod("COD")}
-            />
-            <span>Cash on Delivery</span>
-          </label>
+          {/* PAYMENT OPTIONS */}
+          <Box>
+            <FormLabel component="legend" sx={{ mb: 1 }}>
+              Select Payment Method
+            </FormLabel>
+            <RadioGroup
+              value={paymentMethod}
+              onChange={(e) =>
+                setPaymentMethod(e.target.value as "COD" | "STRIPE")
+              }
+            >
+              <FormControlLabel
+                value="COD"
+                control={<Radio />}
+                label="Cash on Delivery"
+              />
+              <FormControlLabel
+                value="STRIPE"
+                control={<Radio />}
+                label="Pay Online (Stripe)"
+              />
+            </RadioGroup>
+          </Box>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="radio"
-              checked={paymentMethod === "STRIPE"}
-              onChange={() => setPaymentMethod("STRIPE")}
-            />
-            <span>Pay Online (Stripe)</span>
-          </label>
-        </div>
-
-        {/* CONFIRM BUTTON */}
-        <button
-          disabled={loading}
-          onClick={handleConfirmPayment}
-          className="mt-6 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700"
-        >
-          {loading ? "Processing..." : "Confirm Payment"}
-        </button>
-      </div>
-    </div>
+          {/* CONFIRM BUTTON */}
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            size="large"
+            onClick={handleConfirmPayment}
+            disabled={loading}
+            sx={{ mt: 4 }}
+          >
+            {loading ? <CircularProgress size={22} color="inherit" /> : "Confirm Payment"}
+          </Button>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 

@@ -1,9 +1,22 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UploadCloud, Loader2 } from "lucide-react";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Typography,
+  Alert,
+  CircularProgress,
+  Stack,
+} from "@mui/material";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
 import { serviceProviderSchema } from "../../schemas/serviceProvider.schema";
 import type { ServiceProviderFormData } from "../../schemas/serviceProvider.schema";
 import { applyServiceProviderApi } from "../../api/serviceProvider.api";
@@ -22,7 +35,10 @@ const ServiceProviderForm = ({
 }: Props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [success, setSuccess] = useState<string | null>(null);
+  const [aadhaarFileName, setAadhaarFileName] = useState<string | null>(null);
+  const [panFileName, setPanFileName] = useState<string | null>(null);
 
   const {
     register,
@@ -47,20 +63,21 @@ const ServiceProviderForm = ({
 
   const onSubmit = async (data: ServiceProviderFormData) => {
     const formData = new FormData();
-    formData.append("businessName", data.businessName);
 
+    formData.append("businessName", data.businessName);
     if (data.phone) formData.append("phone", data.phone);
+
     if (data.aadhaar) {
       formData.append("documents", data.aadhaar);
       formData.append("documentTypes", "Aadhaar");
     }
+
     if (data.pan) {
       formData.append("documents", data.pan);
       formData.append("documentTypes", "PAN");
     }
 
     const res = await applyServiceProviderApi(formData);
-
     dispatch(setApplication(res.data.application));
 
     setSuccess(
@@ -77,100 +94,152 @@ const ServiceProviderForm = ({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-2xl bg-white rounded-2xl shadow p-8 space-y-6"
-      >
-        <h2 className="text-2xl font-semibold">
-          {editMode ? "Edit Application" : "Apply as Service Provider"}
-        </h2>
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+      minHeight="100vh"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      bgcolor="#f9fafb"
+      px={2}
+    >
+      <Card sx={{ width: "100%", maxWidth: 600, borderRadius: 3 }}>
+        <CardContent>
+          <Typography variant="h5" fontWeight={600} mb={3}>
+            {editMode ? "Edit Application" : "Apply as Service Provider"}
+          </Typography>
 
-        {/* SUCCESS */}
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 p-3 rounded">
-            {success}
-          </div>
-        )}
-
-        {/* BUSINESS NAME */}
-        <div>
-          <label className="block text-sm font-medium">Business Name</label>
-          <input
-            {...register("businessName")}
-            className="w-full border rounded px-4 py-2"
-          />
-          {errors.businessName && (
-            <p className="text-red-600 text-sm">
-              {errors.businessName.message}
-            </p>
+          {/* SUCCESS */}
+          {success && (
+            <Alert
+              severity="success"
+              icon={<CheckCircleIcon />}
+              sx={{ mb: 2 }}
+            >
+              {success}
+            </Alert>
           )}
-        </div>
 
-        {/* PHONE */}
-        <div>
-          <label className="block text-sm font-medium">Phone</label>
-          <input
-            {...register("phone")}
-            className="w-full border rounded px-4 py-2"
-          />
-          {errors.phone && (
-            <p className="text-red-600 text-sm">{errors.phone.message}</p>
-          )}
-        </div>
-
-        {/* AADHAAR */}
-        <div>
-          <label className="flex items-center gap-4 border-dashed border p-4 rounded cursor-pointer">
-            <UploadCloud />
-            Aadhaar Upload
-            <input
-              type="file"
-              hidden
-              onChange={(e) =>
-                setValue("aadhaar", e.target.files?.[0])
-              }
+          <Stack spacing={2}>
+            {/* BUSINESS NAME */}
+            <TextField
+              label="Business Name"
+              fullWidth
+              {...register("businessName")}
+              error={!!errors.businessName}
+              helperText={errors.businessName?.message}
             />
-          </label>
-          {errors.aadhaar && (
-            <p className="text-red-600 text-sm">
-              {errors.aadhaar.message}
-            </p>
-          )}
-        </div>
 
-        {/* PAN */}
-        <div>
-          <label className="flex items-center gap-4 border-dashed border p-4 rounded cursor-pointer">
-            <UploadCloud />
-            PAN Upload
-            <input
-              type="file"
-              hidden
-              onChange={(e) =>
-                setValue("pan", e.target.files?.[0])
-              }
+            {/* PHONE */}
+            <TextField
+              label="Phone"
+              fullWidth
+              {...register("phone")}
+              error={!!errors.phone}
+              helperText={errors.phone?.message}
             />
-          </label>
-          {errors.pan && (
-            <p className="text-red-600 text-sm">
-              {errors.pan.message}
-            </p>
-          )}
-        </div>
 
-        {/* SUBMIT */}
-        <button
-          disabled={isSubmitting}
-          className="w-full bg-indigo-600 text-white py-3 rounded"
-        >
-          {isSubmitting && (
-            <Loader2 className="inline mr-2 animate-spin" />
-          )}
-          {editMode ? "Update" : "Submit"}
-        </button>
-      </form>
-    </div>
+            {/* AADHAAR UPLOAD */}
+            <Box>
+              <Button
+                component="label"
+                variant="outlined"
+                fullWidth
+                startIcon={<CloudUploadIcon />}
+                sx={{
+                  justifyContent: "flex-start",
+                  py: 1.5,
+                  borderStyle: "dashed",
+                }}
+              >
+                Aadhaar Upload
+                <input
+                  type="file"
+                  hidden
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setValue("aadhaar", file);
+                      setAadhaarFileName(file.name);
+                    }
+                  }}
+                />
+              </Button>
+
+              {aadhaarFileName && (
+                <Typography variant="body2" mt={0.5} color="text.secondary">
+                  Selected: <strong>{aadhaarFileName}</strong>
+                </Typography>
+              )}
+
+              {errors.aadhaar && (
+                <Typography variant="caption" color="error">
+                  {errors.aadhaar.message}
+                </Typography>
+              )}
+            </Box>
+
+            {/* PAN UPLOAD */}
+            <Box>
+              <Button
+                component="label"
+                variant="outlined"
+                fullWidth
+                startIcon={<CloudUploadIcon />}
+                sx={{
+                  justifyContent: "flex-start",
+                  py: 1.5,
+                  borderStyle: "dashed",
+                }}
+              >
+                PAN Upload
+                <input
+                  type="file"
+                  hidden
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setValue("pan", file);
+                      setPanFileName(file.name);
+                    }
+                  }}
+                />
+              </Button>
+
+              {panFileName && (
+                <Typography variant="body2" mt={0.5} color="text.secondary">
+                  Selected: <strong>{panFileName}</strong>
+                </Typography>
+              )}
+
+              {errors.pan && (
+                <Typography variant="caption" color="error">
+                  {errors.pan.message}
+                </Typography>
+              )}
+            </Box>
+
+            {/* SUBMIT */}
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={isSubmitting}
+              sx={{ mt: 2 }}
+            >
+              {isSubmitting ? (
+                <CircularProgress size={22} color="inherit" />
+              ) : editMode ? (
+                "Update"
+              ) : (
+                "Submit"
+              )}
+            </Button>
+          </Stack>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 
